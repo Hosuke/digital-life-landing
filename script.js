@@ -114,7 +114,67 @@ const modal = document.getElementById('successModal');
 const submitBtn = document.getElementById('submitBtn');
 const submitBtnText = document.getElementById('submitBtnText');
 const seqNumber = document.getElementById('sequenceNumber');
-const stripePayBtn = document.getElementById('stripePayBtn');
+const stripePaymentForm = document.getElementById('stripe-payment-form');
+const submitStripeBtn = document.getElementById('submitStripeBtn');
+
+// Initialize Stripe UI
+const stripe = Stripe('pk_live_51QvgmMAsnV5iHJdqw3FzVpEPVfndbmQXVPiwXAH1OztSC7s8m13YaRtvwXijrev91tDOBhtb3XNY2clhVHMBgFjl00MY4pxw8t');
+const elements = stripe.elements();
+const cardElement = elements.create('card', {
+    style: {
+        base: {
+            color: '#ffffff',
+            fontFamily: '"Noto Sans SC", sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            iconColor: '#00f3ff',
+            '::placeholder': {
+                color: '#a0b0c0'
+            }
+        },
+        invalid: {
+            color: '#ff3333',
+            iconColor: '#ff3333'
+        }
+    }
+});
+cardElement.mount('#card-element');
+
+cardElement.on('change', function (event) {
+    const displayError = document.getElementById('card-errors');
+    if (event.error) {
+        displayError.textContent = event.error.message;
+    } else {
+        displayError.textContent = '';
+    }
+});
+
+if (submitStripeBtn) {
+    submitStripeBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        submitStripeBtn.disabled = true;
+        submitStripeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 加密通信连接中...';
+
+        // Simulate creating a payment token via Stripe.js (Safe to run without a backend)
+        const { token, error } = await stripe.createToken(cardElement);
+
+        if (error) {
+            const errorElement = document.getElementById('card-errors');
+            errorElement.textContent = error.message;
+            submitStripeBtn.disabled = false;
+            submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 1,500,000 信用点';
+        } else {
+            // Success Demo Effect
+            setTimeout(() => {
+                alert('支付授权成功！您刚刚生成了一个安全的 Stripe Token: ' + token.id + '。（注：由于此页面为纯前端 GitHub Pages，此交易处于演示模式，未产生实际收费。如需真实扣款需配合后端接口。）');
+                closeModal();
+                submitStripeBtn.disabled = false;
+                submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 1,500,000 信用点';
+                cardElement.clear();
+            }, 1000);
+        }
+    });
+}
 
 const planRadios = document.querySelectorAll('input[name="planType"]');
 const trialCheckgroup = document.getElementById('trialCheckgroup');
@@ -157,8 +217,7 @@ planRadios.forEach(radio => {
     });
 });
 
-// TODO: 将这里的 URL 替换为您在 Stripe Dashboard 中创建的 Payment Link (Payment Links > Create)
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_YOUR_LINK_HERE";
+// Removed dummy stripe payment link
 
 applyForm.addEventListener('submit', (e) => {
     e.preventDefault();
@@ -178,27 +237,15 @@ applyForm.addEventListener('submit', (e) => {
         if (currentPlan === 'full') {
             modalTitle.textContent = '授权申请已收录';
             modalDesc.innerHTML = '请完成定金支付以正式锁定 550W 算力周期。<br>当前算力预估需要等待：<span class="highlight">1.4 年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级安全加密保障</small>';
-            stripePayBtn.style.display = 'inline-flex';
+            stripePaymentForm.style.display = 'block';
         } else {
             modalTitle.textContent = '体验资料上传通道已开启';
             modalDesc.innerHTML = '您的试用档案已建立。请后续上传您的 1 张照片和 10 秒以上语音记录。<br>审核通过后约 <span class="highlight">15 分钟</span> 即可生成您的专属数字生命对话链接。';
-            stripePayBtn.style.display = 'none';
+            stripePaymentForm.style.display = 'none';
         }
 
         // Show Modal
         modal.classList.add('active');
-
-        // Setup Stripe Button link
-        if (STRIPE_PAYMENT_LINK.includes("YOUR_LINK_HERE")) {
-            // Placeholder behavior if link is not set
-            stripePayBtn.onclick = (e) => {
-                e.preventDefault();
-                alert("在此处会跳转到 Stripe 支付界面！请在 script.js 中替换实际的 Stripe Payment Link。");
-            };
-        } else {
-            // Actual redirect behavior
-            stripePayBtn.href = STRIPE_PAYMENT_LINK;
-        }
 
         // Reset form btn
         submitBtn.innerHTML = `<span class="btn-text" id="submitBtnText">${originalText}</span><i class="fa-solid fa-fingerprint"></i>`;

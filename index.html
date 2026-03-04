@@ -255,14 +255,28 @@
             <p class="modal-desc">请完成定金支付以正式锁定 550W 算力周期。<br>当前算力预估需要等待：<span class="highlight">1.4
                     年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由
                     Stripe 提供企业级安全加密保障</small></p>
-            <a href="#" id="stripePayBtn" class="cta-btn m-top" target="_blank"><i class="fa-brands fa-stripe"
-                    style="font-size: 1.2rem; margin-right: 5px;"></i> 前往安全支付</a>
+
+            <div id="stripe-payment-form" style="display: none; margin-top: 20px; text-align: left;">
+                <label
+                    style="color: var(--cyan); margin-bottom: 10px; display: block; font-size: 0.9rem;">信用卡/借记卡授权</label>
+                <div id="card-element"
+                    style="padding: 15px; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); border-radius: 4px;">
+                </div>
+                <div id="card-errors" role="alert"
+                    style="color: var(--warn-red); margin-top: 10px; font-size: 0.85rem;"></div>
+                <button id="submitStripeBtn" class="cta-btn m-top"
+                    style="width: 100%; justify-content: center; font-size: 1rem;"><i class="fa-brands fa-stripe"
+                        style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 1,500,000 信用点</button>
+            </div>
+
             <button class="nav-btn" onclick="closeModal()"
                 style="display:block; margin: 15px auto 0; background:transparent; border:none; color:rgba(255,255,255,0.4)!important; text-decoration:underline; cursor:pointer;">我再想想
                 / 稍后支付</button>
         </div>
     </div>
 
+    <!-- Stripe JS -->
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="script.js"></script>
 </body>
 
