@@ -230,18 +230,49 @@ applyForm.addEventListener('submit', (e) => {
 
     // Simulate process
     setTimeout(() => {
-        // Generate random sequence
-        const rand = Math.floor(10000 + Math.random() * 90000);
-        seqNumber.textContent = `DL-2058-${rand}`;
+        // Generate UID
+        const rand = Math.floor(100000 + Math.random() * 900000);
+        const uid = `UID-550W-${rand}`;
+        seqNumber.textContent = uid;
+        seqNumber.setAttribute('data-text', uid); // For glitch effect
 
         if (currentPlan === 'full') {
-            modalTitle.textContent = '授权申请已收录';
-            modalDesc.innerHTML = '请完成定金支付以正式锁定 550W 算力周期。<br>当前算力预估需要等待：<span class="highlight">1.4 年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级安全加密保障</small>';
+            modalTitle.textContent = '算力排期请求已建立';
+            modalDesc.innerHTML = '新生命构建从确认您的专属 UID 开始。<br>请完成定金支付以正式锁定 550W 算力周期，当前算力预估需要等待：<span class="highlight">1.4 年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级安全加密保障</small>';
             stripePaymentForm.style.display = 'block';
+
+            // Remove any dynamically added IM buttons
+            const existingImBtn = document.getElementById('imDeepLinkBtn');
+            if (existingImBtn) existingImBtn.remove();
+
         } else {
-            modalTitle.textContent = '体验资料上传通道已开启';
-            modalDesc.innerHTML = '您的试用档案已建立。请后续上传您的 1 张照片和 10 秒以上语音记录。<br>审核通过后约 <span class="highlight">15 分钟</span> 即可生成您的专属数字生命对话链接。';
+            modalTitle.textContent = '体验生命基座已初始化';
+            modalDesc.innerHTML = `新生命构建从确认专属 UID 开始。您的体验档案已挂载至虚拟空间。<br><br>
+                <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; border-left: 3px solid var(--cyan); margin-top: 15px; font-size: 0.9rem;">
+                    <strong>[系统提示]</strong> 拦截到 550W 初始化请求。请即刻通过专属通讯链路验证您的身份。<br>
+                    点击下方按钮进入加密终端，发送您的影像与声音特征。
+                </div>`;
             stripePaymentForm.style.display = 'none';
+
+            // Generate IM Deep Link Button (e.g., Telegram)
+            const telegramBotUsername = 'your_bot_username_here'; // Replace with actual bot username
+            const deepLinkUrl = `https://t.me/${telegramBotUsername}?start=${uid}`;
+
+            // Check if button already exists, if not create it
+            let imBtn = document.getElementById('imDeepLinkBtn');
+            if (!imBtn) {
+                imBtn = document.createElement('a');
+                imBtn.id = 'imDeepLinkBtn';
+                imBtn.className = 'cta-btn m-top';
+                imBtn.style.display = 'flex';
+                imBtn.style.width = '100%';
+                imBtn.style.justifyContent = 'center';
+                imBtn.style.fontSize = '1.1rem';
+                imBtn.innerHTML = '<i class="fa-brands fa-telegram" style="font-size: 1.5rem; margin-right: 10px;"></i> 接入 Telegram 唤醒终端';
+                // Insert after Stripe form
+                stripePaymentForm.parentNode.insertBefore(imBtn, stripePaymentForm.nextSibling);
+            }
+            imBtn.href = deepLinkUrl;
         }
 
         // Show Modal

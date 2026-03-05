@@ -246,12 +246,17 @@
         </div>
     </footer>
 
-    <!-- 弹窗：支付成功 / 进入排期 -->
+    <!-- 弹窗：支付成功 / 进入排期 / UID确认 -->
     <div class="modal-overlay" id="successModal">
-        <div class="modal-content glass-panel">
-            <div class="modal-icon"><i class="fa-solid fa-check-circle"></i></div>
+        <div class="modal-content glass-panel" style="max-width: 600px;">
+            <div class="modal-icon"><i class="fa-solid fa-microchip"></i></div>
             <h2>授权申请已收录</h2>
-            <p>您的预排期序列号为：<strong id="sequenceNumber" class="highlight">DL-2058-XXXXX</strong></p>
+            <div
+                style="background: rgba(0, 243, 255, 0.05); border: 1px solid var(--cyan); padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="font-size: 0.9rem; color: var(--text-gray); margin-bottom: 5px;">数字生命唯一实体标识符 (UID)</p>
+                <p><strong id="sequenceNumber" class="glitch"
+                        style="font-size: 1.8rem; letter-spacing: 2px;">UID-550W-XXXXX</strong></p>
+            </div>
             <p class="modal-desc">请完成定金支付以正式锁定 550W 算力周期。<br>当前算力预估需要等待：<span class="highlight">1.4
                     年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由
                     Stripe 提供企业级安全加密保障</small></p>
