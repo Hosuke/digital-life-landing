@@ -111,6 +111,8 @@ docker compose up --build
 - Bot token has appeared in chat history previously; rotate it before production.
 
 ## Additional Docs
+- Multi-System Integration (ZH): [docs/SYSTEM_INTEGRATION.zh-CN.md](./docs/SYSTEM_INTEGRATION.zh-CN.md)
+- Multi-System Integration (EN): [docs/SYSTEM_INTEGRATION.en.md](./docs/SYSTEM_INTEGRATION.en.md)
 - Architecture (ZH): [ARCHITECTURE.md](./ARCHITECTURE.md)
 - Architecture (EN): [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
 - Hosting Plan (ZH): [HOSTING_PLAN.md](./HOSTING_PLAN.md)

@@ -1,6 +1,7 @@
 # Digital Life 架构说明（UID 下单 + Bot 独立会话）
 
 English version: [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
+多系统整合总览: [docs/SYSTEM_INTEGRATION.zh-CN.md](./docs/SYSTEM_INTEGRATION.zh-CN.md)
 
 ## 1. 目标
 - 官网作为流量入口，所有体验都先创建唯一 `UID`。
@@ -54,3 +55,7 @@ English version: [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
 - 安全：
   - bot token 与 API key 存 Secret Manager；
   - 所有内部 API 用 `x-control-plane-key` + IP allowlist。
+
+## 8. 文档导航
+- 跨系统流程（用户入口、支付、初始化、OpenClaw 回流）：[docs/SYSTEM_INTEGRATION.zh-CN.md](./docs/SYSTEM_INTEGRATION.zh-CN.md)
+- 丫丫编排细节（接口与回调）：[docs/ORCHESTRATION_RUNBOOK.zh-CN.md](./docs/ORCHESTRATION_RUNBOOK.zh-CN.md)

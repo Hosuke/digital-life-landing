@@ -1,5 +1,7 @@
 # Digital Life Architecture (UID Ordering + Dedicated Bot Sessions)
 
+Macro integration view: [docs/SYSTEM_INTEGRATION.en.md](./docs/SYSTEM_INTEGRATION.en.md)
+
 ## 1. Objectives
 - The website is the traffic entry point, and every user journey starts with a unique `UID`.
 - Users jump from the website to Telegram bot and upload photo/voice samples.
@@ -52,3 +54,7 @@
 - Security:
   - move bot tokens/API keys into secret manager;
   - enforce `x-control-plane-key` + IP allowlist for internal APIs.
+
+## 8. Doc Navigation
+- Cross-system flow (entry, payment, init, OpenClaw callback): [docs/SYSTEM_INTEGRATION.en.md](./docs/SYSTEM_INTEGRATION.en.md)
+- Runtime orchestration details (API/callback): [docs/ORCHESTRATION_RUNBOOK.en.md](./docs/ORCHESTRATION_RUNBOOK.en.md)
