@@ -18,7 +18,8 @@
 3. Bot binds `uid + chatId` -> `control-plane /api/bind`.
 4. Bot receives >=1 photo and >=10s voice -> `control-plane /api/handoff`.
 5. Control-plane allocates dedicated channel from pool (`telegram/whatsapp`, round-robin).
-6. Bot returns allocation result and enters active session mode.
+6. Control-plane triggers Yaya runtime provisioning (webhook/none mode).
+7. If provisioning is pending, bot polls status and proactively confirms when runtime is ready.
 
 ## 4. Data Model (Logical)
 - `Order`: order details (planType/applicant/subject/relation/message).
@@ -30,6 +31,11 @@
 - Default strategy: round-robin in `channelPool`.
 - Prefer idle channels; allow reuse when pool is saturated (`reused=true`).
 - Fallback to virtual assignment when no pool is configured.
+
+## 5.1 Runtime Orchestration Strategy
+- `none` mode: returns `ready` directly (local demo path).
+- `webhook` mode: calls external runtime provisioning endpoint with async callback support.
+- callback endpoint: `POST /api/runtime/callback` to move `provisioning -> ready/failed`.
 
 ## 6. Repo Strategy
 - Current stage: monorepo (landing + bot + control-plane) for speed.

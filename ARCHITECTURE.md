@@ -20,7 +20,8 @@ English version: [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
 3. bot 绑定 UID/chatId -> `control-plane /api/bind`。
 4. bot 收到 >=1 张照片 + >=10s 语音后 -> `control-plane /api/handoff`。
 5. control-plane 轮询分配独立通道（telegram/whatsapp pool）。
-6. bot 把分配结果回传用户，后续进入 active 会话。
+6. control-plane 触发丫丫运行时实例化（webhook/none）。
+7. 若实例化未完成，bot 轮询状态；完成后主动回传用户进入 active 会话。
 
 ## 4. 数据模型（逻辑）
 - `Order`: 下单信息（planType/applicant/subject/relation/message）。
@@ -32,6 +33,11 @@ English version: [ARCHITECTURE.en.md](./ARCHITECTURE.en.md)
 - 默认 `round-robin` 在 `channelPool` 中轮询。
 - 优先使用空闲通道；无空闲时允许复用（`reused=true` 标记）。
 - 没有池配置时使用 `virtual` fallback（保证流程不中断）。
+
+## 5.1 运行时编排策略
+- `none` 模式：直接返回 ready（本地演示）。
+- `webhook` 模式：调用外部运行时实例化，支持异步 callback。
+- callback 接口：`POST /api/runtime/callback`，用于 `provisioning -> ready/failed` 状态推进。
 
 ## 6. Repo 策略建议
 - 当前阶段：保留单仓（landing + bot + control-plane）最省沟通成本。

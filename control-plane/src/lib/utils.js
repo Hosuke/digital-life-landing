@@ -61,7 +61,8 @@ function defaultSession(uid, source = 'unknown') {
       photos: [],
       audio: []
     },
-    channel: null
+    channel: null,
+    runtime: null
   };
 }
 

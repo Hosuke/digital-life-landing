@@ -6,6 +6,7 @@ English version: [README.en.md](./README.en.md)
 - 官网 `UID` 下单与状态追踪
 - Telegram bot 的 UID 绑定与素材回传
 - 独立会话分配（轮询策略）
+- 丫丫运行时实例化编排（可选 webhook）
 
 ## 存储模式
 - `json`（默认）：快速演示，状态保存在 `data/db.json`
@@ -40,12 +41,21 @@ docker compose up --build
 ## 主要接口
 - `POST /api/apply`：官网创建 UID
 - `POST /api/bind`：bot 绑定 `uid <-> tg chat`
-- `POST /api/handoff`：素材齐后请求分配独立会话
+- `POST /api/handoff`：素材齐后请求分配独立会话，并触发运行时实例化
 - `POST /api/allocate-channel`：手动分配（运维）
 - `POST /api/release-channel`：释放会话占用
+- `POST /api/runtime/callback`：运行时异步回传实例化状态
 - `GET /api/session/:uid/status`：查询状态
 - `GET /api/admin/state`：查看当前计数
 - `GET /health`：健康检查
+
+## 运行时编排配置
+- `RUNTIME_ORCHESTRATOR_MODE=none`：默认，直接返回 ready（演示模式）
+- `RUNTIME_ORCHESTRATOR_MODE=webhook`：调用 `RUNTIME_ORCHESTRATOR_URL` 实例化丫丫
+- 相关变量：
+  - `RUNTIME_ORCHESTRATOR_URL`
+  - `RUNTIME_ORCHESTRATOR_KEY`
+  - `RUNTIME_ORCHESTRATOR_TIMEOUT_MS`
 
 ## 鉴权
 - 默认可不设密钥（方便本地联调）。

@@ -4,6 +4,7 @@ Control-plane responsibilities:
 - Issue UID from website orders
 - Handle bot UID binding and asset handoff
 - Allocate dedicated conversation channels
+- Orchestrate Yaya runtime provisioning (optional webhook mode)
 
 ## Storage Modes
 - `json` (default): fast local demo, state in `data/db.json`
@@ -39,12 +40,21 @@ docker compose up --build
 ## Main APIs
 - `POST /api/apply`
 - `POST /api/bind`
-- `POST /api/handoff`
+- `POST /api/handoff` (allocation + runtime provisioning trigger)
 - `POST /api/allocate-channel`
 - `POST /api/release-channel`
+- `POST /api/runtime/callback` (async runtime status callback)
 - `GET /api/session/:uid/status`
 - `GET /api/admin/state`
 - `GET /health`
+
+## Runtime Orchestration Config
+- `RUNTIME_ORCHESTRATOR_MODE=none`: default demo mode, returns ready directly
+- `RUNTIME_ORCHESTRATOR_MODE=webhook`: calls `RUNTIME_ORCHESTRATOR_URL` to provision runtime
+- Related vars:
+  - `RUNTIME_ORCHESTRATOR_URL`
+  - `RUNTIME_ORCHESTRATOR_KEY`
+  - `RUNTIME_ORCHESTRATOR_TIMEOUT_MS`
 
 ## Security
 - Keep `CONTROL_PLANE_KEY` enabled in production.

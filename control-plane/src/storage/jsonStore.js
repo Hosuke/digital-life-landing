@@ -293,6 +293,12 @@ function createJsonStore(config) {
       return { uid, released };
     },
 
+    async patchSession(uid, patch) {
+      const session = upsertSession(uid, patch || {});
+      await flushState();
+      return { uid, session };
+    },
+
     async getStatus(uid) {
       return statusPayload(uid);
     },

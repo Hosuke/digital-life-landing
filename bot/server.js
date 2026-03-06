@@ -17,6 +17,8 @@ const PREFERRED_CHANNEL_KINDS = String(process.env.PREFERRED_CHANNEL_KINDS || 't
   .split(',')
   .map((item) => item.trim())
   .filter(Boolean);
+const RUNTIME_POLL_INTERVAL_MS = Number(process.env.RUNTIME_POLL_INTERVAL_MS || 6000);
+const RUNTIME_POLL_MAX_ATTEMPTS = Number(process.env.RUNTIME_POLL_MAX_ATTEMPTS || 25);
 const DATA_DIR = path.resolve(process.env.BOT_DATA_DIR || path.join(__dirname, 'data'));
 const ASSET_DIR = path.join(DATA_DIR, 'assets');
 const SESSION_FILE = path.join(DATA_DIR, 'sessions.json');
@@ -26,6 +28,7 @@ const bot = new TelegramBot(token, { polling: true });
 let sessionsByChat = {};
 let isSaving = false;
 let saveQueued = false;
+const runtimePollers = new Set();
 
 const UID_RE = /^UID-550W-[A-Za-z0-9_-]{4,}$/;
 
@@ -49,7 +52,8 @@ function ensureSessionShape(session) {
       delivered: Boolean(session?.handoff?.delivered),
       error: session?.handoff?.error || null,
       deliveredAt: session?.handoff?.deliveredAt || null,
-      allocation: session?.handoff?.allocation || null
+      allocation: session?.handoff?.allocation || null,
+      runtime: session?.handoff?.runtime || null
     },
     messagesCount: Number(session.messagesCount || 0)
   };
@@ -115,7 +119,8 @@ function bindUid(chatId, uid) {
       delivered: false,
       error: null,
       deliveredAt: null,
-      allocation: null
+      allocation: null,
+      runtime: null
     },
     assets: { photos: [], audio: [] },
     messagesCount: 0
@@ -218,6 +223,112 @@ async function syncBindingToControlPlane(uid, msg) {
   }
 }
 
+function runtimeState(runtime) {
+  const raw = String(runtime?.status || '').trim().toLowerCase();
+  if (raw === 'ready' || raw === 'active' || raw === 'success') return 'ready';
+  if (raw === 'failed' || raw === 'error' || raw === 'timeout') return 'failed';
+  if (raw === 'queued' || raw === 'pending' || raw === 'provisioning' || raw === 'initializing') return 'provisioning';
+  return 'unknown';
+}
+
+function handoffSuccessText(allocation, runtime) {
+  const lines = [
+    '[量子通道建立成功]',
+    '丫丫初始化已完成，已进入独立会话。你可以继续发送图片/语音/地点。'
+  ];
+  const entrypoint = runtime?.entrypoint || allocation?.entrypoint || '';
+  if (allocation?.kind) lines.push(`会话类型：${allocation.kind}`);
+  if (allocation?.channelId) lines.push(`通道编号：${allocation.channelId}`);
+  if (entrypoint) lines.push(`入口：${entrypoint}`);
+  return lines.join('\n');
+}
+
+function handoffProvisioningText(runtime) {
+  const hint = runtime?.message || '正在实例化丫丫并建立独立会话。';
+  return `[系统处理中]\n${hint}\n预计 1-3 分钟完成，完成后会自动回传。`;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function fetchControlPlaneSessionStatus(uid) {
+  if (!CONTROL_PLANE_BASE_URL) return null;
+  const headers = {};
+  if (CONTROL_PLANE_KEY) {
+    headers['x-control-plane-key'] = CONTROL_PLANE_KEY;
+  }
+  const res = await fetch(`${CONTROL_PLANE_BASE_URL}/api/session/${encodeURIComponent(uid)}/status`, {
+    method: 'GET',
+    headers
+  });
+  if (!res.ok) {
+    throw new Error(`status_${res.status}`);
+  }
+  return res.json();
+}
+
+async function pollRuntimeForChat(chatId, uid) {
+  if (!CONTROL_PLANE_BASE_URL) return;
+  const key = `${chatId}:${uid}`;
+  if (runtimePollers.has(key)) return;
+  runtimePollers.add(key);
+
+  try {
+    for (let i = 0; i < RUNTIME_POLL_MAX_ATTEMPTS; i += 1) {
+      await sleep(RUNTIME_POLL_INTERVAL_MS);
+
+      let snapshot = null;
+      try {
+        snapshot = await fetchControlPlaneSessionStatus(uid);
+      } catch (err) {
+        console.warn('poll runtime status failed:', String(err.message || err));
+        continue;
+      }
+
+      const runtime = snapshot?.session?.runtime || null;
+      const allocation = snapshot?.assignment || snapshot?.session?.channel || null;
+      const state = runtimeState(runtime);
+      const local = getSession(chatId);
+      if (!local || local.uid !== uid) {
+        return;
+      }
+
+      if (state === 'ready') {
+        local.state = 'active';
+        local.handoff.runtime = runtime;
+        local.handoff.allocation = allocation || local.handoff.allocation;
+        upsertSession(chatId, local);
+        await bot.sendMessage(chatId, handoffSuccessText(local.handoff.allocation, runtime));
+        return;
+      }
+
+      if (state === 'failed') {
+        local.state = 'active';
+        local.handoff.runtime = runtime;
+        upsertSession(chatId, local);
+        await bot.sendMessage(
+          chatId,
+          '[系统提示]\n丫丫初始化暂时失败，已切回当前窗口继续体验。'
+        );
+        return;
+      }
+    }
+
+    const local = getSession(chatId);
+    if (local && local.uid === uid) {
+      local.state = 'active';
+      upsertSession(chatId, local);
+      await bot.sendMessage(
+        chatId,
+        '[系统提示]\n初始化超时，先在当前窗口继续体验；后台完成后会再通知你。'
+      );
+    }
+  } finally {
+    runtimePollers.delete(key);
+  }
+}
+
 function hasEnoughAssets(session) {
   const hasPhoto = session.assets.photos.length >= 1;
   const longEnoughAudio = session.assets.audio.some((a) => Number(a.duration || 0) >= MIN_AUDIO_SECONDS);
@@ -237,6 +348,7 @@ async function triggerHandoff(session) {
   const updated = { ...session };
   updated.handoff.requested = true;
   updated.handoff.allocation = null;
+  updated.handoff.runtime = null;
 
   if (CONTROL_PLANE_BASE_URL) {
     try {
@@ -248,6 +360,7 @@ async function triggerHandoff(session) {
       updated.handoff.error = null;
       updated.handoff.deliveredAt = nowIso();
       updated.handoff.allocation = data?.assignment || null;
+      updated.handoff.runtime = data?.runtime || null;
       return updated;
     } catch (err) {
       updated.handoff.error = String(err.message || err);
@@ -272,6 +385,7 @@ async function triggerHandoff(session) {
       updated.handoff.delivered = true;
       updated.handoff.error = null;
       updated.handoff.deliveredAt = nowIso();
+      updated.handoff.runtime = null;
       return updated;
     } catch (err) {
       updated.handoff.delivered = false;
@@ -296,22 +410,31 @@ async function onAssetsReady(chatId, session) {
   next = await triggerHandoff(next);
 
   if (next.handoff.delivered) {
-    next.state = 'active';
-    upsertSession(chatId, next);
     const allocation = next.handoff.allocation || null;
-    const lines = [
-      '[量子通道建立成功]',
-      '已为你分配独立会话。接下来可继续发送需求（图片/语音/地点）。'
-    ];
-    if (allocation) {
-      if (allocation.kind) lines.push(`会话类型：${allocation.kind}`);
-      if (allocation.channelId) lines.push(`通道编号：${allocation.channelId}`);
-      if (allocation.entrypoint) lines.push(`入口：${allocation.entrypoint}`);
+    const runtime = next.handoff.runtime || null;
+    const state = runtimeState(runtime);
+
+    if (state === 'ready' || state === 'unknown') {
+      next.state = 'active';
+      upsertSession(chatId, next);
+      await bot.sendMessage(chatId, handoffSuccessText(allocation, runtime));
+      return;
     }
-    await bot.sendMessage(
-      chatId,
-      lines.join('\n')
-    );
+
+    if (state === 'failed') {
+      next.state = 'active';
+      upsertSession(chatId, next);
+      await bot.sendMessage(
+        chatId,
+        '[系统提示]\n丫丫初始化失败，已切回当前窗口继续体验。'
+      );
+      return;
+    }
+
+    next.state = 'handoff_pending';
+    upsertSession(chatId, next);
+    await bot.sendMessage(chatId, handoffProvisioningText(runtime));
+    void pollRuntimeForChat(chatId, session.uid);
     return;
   }
 
@@ -448,7 +571,7 @@ bot.on('message', async (msg) => {
   }
 
   if (session.state === 'handoff_pending') {
-    await bot.sendMessage(chatId, '素材已收齐，正在分配独立会话，请稍候。');
+    await bot.sendMessage(chatId, '素材已收齐，丫丫正在初始化并分配独立会话，请稍候。');
     return;
   }
 

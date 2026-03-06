@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { createStoreFromEnv, resolveStorageConfig } = require('./storage');
 const { normalizeText, nowIso } = require('./lib/utils');
+const { createRuntimeOrchestratorFromEnv } = require('./runtime/orchestrator');
 
 const PORT = Number(process.env.PORT || 8787);
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
@@ -30,6 +31,7 @@ function asyncHandler(fn) {
 
 async function main() {
   const store = createStoreFromEnv();
+  const runtimeOrchestrator = createRuntimeOrchestratorFromEnv();
   const storageConfig = resolveStorageConfig();
   await store.init();
 
@@ -43,6 +45,7 @@ async function main() {
       ok: true,
       service: 'digital-life-control-plane',
       mode: store.mode,
+      runtimeMode: runtimeOrchestrator.mode,
       now: nowIso(),
       channelPoolSize: health.channelPoolSize,
       activeAssignments: health.activeAssignments
@@ -122,11 +125,30 @@ async function main() {
       preferredKinds
     });
 
+    const statusSnapshot = await store.getStatus(uid);
+    const runtime = await runtimeOrchestrator.provision({
+      uid,
+      order: statusSnapshot.order,
+      session: statusSnapshot.session,
+      assignment: result.assignment,
+      callbackUrl: `${PUBLIC_BASE_URL}/api/runtime/callback`,
+      statusUrl: `${PUBLIC_BASE_URL}/api/session/${uid}/status`
+    });
+
+    const patch = { runtime };
+    if (runtime.status === 'ready') {
+      patch.status = 'active';
+    } else if (runtime.status === 'failed') {
+      patch.status = 'allocated';
+    }
+    const patched = await store.patchSession(uid, patch);
+
     return res.json({
       ok: true,
       uid,
-      sessionStatus: result.sessionStatus,
-      assignment: result.assignment
+      sessionStatus: patched.session?.status || result.sessionStatus,
+      assignment: result.assignment,
+      runtime
     });
   }));
 
@@ -158,6 +180,29 @@ async function main() {
     return res.json({ ok: true, uid, released: result.released });
   }));
 
+  app.post('/api/runtime/callback', internalAuth, asyncHandler(async (req, res) => {
+    const uid = normalizeText(req.body?.uid || req.body?.runtime?.uid, 128);
+    if (!uid) {
+      return res.status(400).json({ ok: false, error: 'uid required' });
+    }
+
+    const runtime = runtimeOrchestrator.normalizeCallback(req.body || {});
+    const patch = { runtime };
+    if (runtime.status === 'ready') {
+      patch.status = 'active';
+    } else if (runtime.status === 'failed') {
+      patch.status = 'allocated';
+    }
+
+    const patched = await store.patchSession(uid, patch);
+    return res.json({
+      ok: true,
+      uid,
+      sessionStatus: patched.session?.status || null,
+      runtime
+    });
+  }));
+
   app.get('/api/session/:uid/status', asyncHandler(async (req, res) => {
     const uid = normalizeText(req.params.uid, 128);
     if (!uid) {
@@ -184,6 +229,7 @@ async function main() {
     return res.json({
       ok: true,
       mode: store.mode,
+      runtimeMode: runtimeOrchestrator.mode,
       meta: admin.meta,
       counts: admin.counts
     });
@@ -197,6 +243,7 @@ async function main() {
   const server = app.listen(PORT, () => {
     console.log(`control-plane listening on ${PORT}`);
     console.log(`storage mode: ${store.mode}`);
+    console.log(`runtime orchestrator mode: ${runtimeOrchestrator.mode}`);
     console.log(`channel pool source: ${storageConfig.channelPoolFile}`);
     if (store.mode === 'json') {
       console.log(`data dir: ${storageConfig.dataDir}`);

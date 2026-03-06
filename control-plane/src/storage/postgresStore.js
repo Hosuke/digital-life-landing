@@ -51,7 +51,8 @@ function mapSessionRow(row) {
       boundAt: null
     },
     assets: row.assets || { photos: [], audio: [] },
-    channel: row.channel || null
+    channel: row.channel || null,
+    runtime: row.runtime || null
   };
 }
 
@@ -114,6 +115,7 @@ function createPostgresStore(config) {
     if (!exists) {
       throw new Error('schema_not_ready: run `npm run db:init` in control-plane first');
     }
+    await pool.query('ALTER TABLE cp_sessions ADD COLUMN IF NOT EXISTS runtime JSONB NULL');
   }
 
   async function ensureMetaAndChannels() {
@@ -193,15 +195,16 @@ function createPostgresStore(config) {
     const merged = mergeSession(current, { ...patch, uid });
 
     await client.query(
-      `INSERT INTO cp_sessions(uid, status, source, created_at, updated_at, binding, assets, channel)
-       VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb)
+      `INSERT INTO cp_sessions(uid, status, source, created_at, updated_at, binding, assets, channel, runtime)
+       VALUES($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb,$8::jsonb,$9::jsonb)
        ON CONFLICT (uid) DO UPDATE SET
          status = EXCLUDED.status,
          source = EXCLUDED.source,
          updated_at = EXCLUDED.updated_at,
          binding = EXCLUDED.binding,
          assets = EXCLUDED.assets,
-         channel = EXCLUDED.channel`,
+         channel = EXCLUDED.channel,
+         runtime = EXCLUDED.runtime`,
       [
         merged.uid,
         merged.status,
@@ -210,7 +213,8 @@ function createPostgresStore(config) {
         new Date(merged.updatedAt),
         JSON.stringify(merged.binding || {}),
         JSON.stringify(merged.assets || { photos: [], audio: [] }),
-        JSON.stringify(merged.channel || null)
+        JSON.stringify(merged.channel || null),
+        JSON.stringify(merged.runtime || null)
       ]
     );
 
@@ -450,6 +454,13 @@ function createPostgresStore(config) {
           await upsertSession(client, uid, { status: 'active' });
         }
         return { uid, released };
+      });
+    },
+
+    async patchSession(uid, patch) {
+      return withTx(async (client) => {
+        const session = await upsertSession(client, uid, patch || {});
+        return { uid, session };
       });
     },
 

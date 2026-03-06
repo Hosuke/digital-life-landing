@@ -29,8 +29,11 @@ CREATE TABLE IF NOT EXISTS cp_sessions (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   binding JSONB NOT NULL DEFAULT '{}'::jsonb,
   assets JSONB NOT NULL DEFAULT '{"photos":[],"audio":[]}'::jsonb,
-  channel JSONB NULL
+  channel JSONB NULL,
+  runtime JSONB NULL
 );
+
+ALTER TABLE cp_sessions ADD COLUMN IF NOT EXISTS runtime JSONB NULL;
 
 CREATE TABLE IF NOT EXISTS cp_assignments (
   uid TEXT PRIMARY KEY,

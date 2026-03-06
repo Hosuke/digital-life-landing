@@ -14,6 +14,8 @@ flowchart LR
   T -->|"POST /api/handoff"| C
   C --> A["Session Allocator (Round Robin)"]
   A --> CH["Channel Pool (TG / WhatsApp)"]
+  C -->|"runtime provision webhook"| R["Yaya Runtime (openclaw)"]
+  R -->|"POST /api/runtime/callback"| C
   C --> DB[("JSON or PostgreSQL")]
   T --> FS[("Local Asset Storage")]
 ```
@@ -122,3 +124,5 @@ docker compose up --build
 - Investor Product Memo (ZH): [docs/INVESTOR_PRODUCT_MEMO.zh-CN.md](./docs/INVESTOR_PRODUCT_MEMO.zh-CN.md)
 - Investor Product Memo (EN): [docs/INVESTOR_PRODUCT_MEMO.en.md](./docs/INVESTOR_PRODUCT_MEMO.en.md)
 - Bilingual Talk Track (Investor-facing): [docs/BILINGUAL_TALK_TRACK.md](./docs/BILINGUAL_TALK_TRACK.md)
+- Orchestration Runbook (ZH): [docs/ORCHESTRATION_RUNBOOK.zh-CN.md](./docs/ORCHESTRATION_RUNBOOK.zh-CN.md)
+- Orchestration Runbook (EN): [docs/ORCHESTRATION_RUNBOOK.en.md](./docs/ORCHESTRATION_RUNBOOK.en.md)
