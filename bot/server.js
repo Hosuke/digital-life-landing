@@ -1,119 +1,397 @@
 require('dotenv').config();
+const fs = require('fs');
+const fsp = require('fs/promises');
+const path = require('path');
 const TelegramBot = require('node-telegram-bot-api');
 
-// 用从 BotFather 获取的 Token 替换这里的占位符（或者写在 .env 文件中）
 const token = process.env.TELEGRAM_BOT_TOKEN || 'YOUR_TELEGRAM_BOT_TOKEN_HERE';
+if (!token || token === 'YOUR_TELEGRAM_BOT_TOKEN_HERE') {
+  console.error('TELEGRAM_BOT_TOKEN missing.');
+  process.exit(1);
+}
 
-// 创建一个新的以 polling 模式运行的 Bot
+const MIN_AUDIO_SECONDS = Number(process.env.MIN_AUDIO_SECONDS || 10);
+const ORCHESTRATOR_WEBHOOK_URL = process.env.ORCHESTRATOR_WEBHOOK_URL || '';
+const DATA_DIR = path.resolve(process.env.BOT_DATA_DIR || path.join(__dirname, 'data'));
+const ASSET_DIR = path.join(DATA_DIR, 'assets');
+const SESSION_FILE = path.join(DATA_DIR, 'sessions.json');
+
 const bot = new TelegramBot(token, { polling: true });
 
-// 模拟数据库，存储用户的状态和 UID
-const userSessions = {};
+let sessionsByChat = {};
+let isSaving = false;
+let saveQueued = false;
 
-console.log("550W 量子计算机接入端（Telegram Bot）已启动...");
+const UID_RE = /^UID-550W-[A-Za-z0-9_-]{4,}$/;
 
-// 监听 /start 命令，捕获从网页传过来的 UID (例如 /start UID-550W-123456)
-bot.onText(/\/start (.+)/, (msg, match) => {
-    const chatId = msg.chat.id;
-    const uid = match[1]; // 获取 URL 传参中的 UID
+function nowIso() {
+  return new Date().toISOString();
+}
 
-    // 初始化用户状态
-    userSessions[chatId] = { step: 'awaiting_data', uid: uid, messagesCount: 0 };
+function ensureSessionShape(session) {
+  return {
+    uid: session.uid,
+    chatId: session.chatId,
+    state: session.state || 'awaiting_data',
+    createdAt: session.createdAt || nowIso(),
+    updatedAt: nowIso(),
+    assets: {
+      photos: Array.isArray(session?.assets?.photos) ? session.assets.photos : [],
+      audio: Array.isArray(session?.assets?.audio) ? session.assets.audio : []
+    },
+    handoff: session.handoff || {
+      requested: false,
+      delivered: false,
+      error: null,
+      deliveredAt: null
+    },
+    messagesCount: Number(session.messagesCount || 0)
+  };
+}
 
-    bot.sendMessage(chatId, `*[系统提示]* 拦截到 550W 算力池请求。\n\n实体标识符: \`${uid}\` 已验证匹配。\n\n为激活基础数字投影，请在此窗口发送：\n📸 一张正面面部照片\n🎙️ 一段至少 10 秒的声音样本。`, { parse_mode: 'Markdown' });
+async function ensureDirs() {
+  await fsp.mkdir(ASSET_DIR, { recursive: true });
+}
+
+async function loadSessions() {
+  try {
+    const raw = await fsp.readFile(SESSION_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    const normalized = {};
+    for (const [chatId, s] of Object.entries(parsed)) {
+      normalized[chatId] = ensureSessionShape(s);
+    }
+    sessionsByChat = normalized;
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.warn('load sessions failed:', err.message);
+    }
+    sessionsByChat = {};
+  }
+}
+
+async function flushSessions() {
+  if (isSaving) {
+    saveQueued = true;
+    return;
+  }
+  isSaving = true;
+  try {
+    await ensureDirs();
+    await fsp.writeFile(SESSION_FILE, JSON.stringify(sessionsByChat, null, 2), 'utf8');
+  } finally {
+    isSaving = false;
+    if (saveQueued) {
+      saveQueued = false;
+      await flushSessions();
+    }
+  }
+}
+
+function getSession(chatId) {
+  return sessionsByChat[String(chatId)] || null;
+}
+
+function upsertSession(chatId, data) {
+  const key = String(chatId);
+  const merged = ensureSessionShape({ ...(sessionsByChat[key] || {}), ...data, chatId: Number(chatId) });
+  sessionsByChat[key] = merged;
+  void flushSessions();
+  return merged;
+}
+
+function bindUid(chatId, uid) {
+  return upsertSession(chatId, {
+    uid,
+    state: 'awaiting_data',
+    handoff: {
+      requested: false,
+      delivered: false,
+      error: null,
+      deliveredAt: null
+    },
+    assets: { photos: [], audio: [] },
+    messagesCount: 0
+  });
+}
+
+async function downloadTelegramFile(fileId, targetPath) {
+  const link = await bot.getFileLink(fileId);
+  const res = await fetch(link);
+  if (!res.ok) throw new Error(`download failed ${res.status}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  await fsp.mkdir(path.dirname(targetPath), { recursive: true });
+  await fsp.writeFile(targetPath, buf);
+  return targetPath;
+}
+
+function sessionAssetFolder(uid) {
+  return path.join(ASSET_DIR, uid);
+}
+
+async function savePhoto(uid, msg) {
+  const photos = msg.photo || [];
+  if (!photos.length) return null;
+  const best = photos[photos.length - 1];
+  const fileId = best.file_id;
+  const fileName = `${Date.now()}-photo-${fileId}.jpg`;
+  const abs = path.join(sessionAssetFolder(uid), fileName);
+  await downloadTelegramFile(fileId, abs);
+  return {
+    kind: 'photo',
+    fileId,
+    telegramFileUniqueId: best.file_unique_id,
+    path: abs,
+    ts: nowIso()
+  };
+}
+
+async function saveAudio(uid, msg) {
+  const voice = msg.voice || msg.audio || null;
+  if (!voice) return null;
+  const fileId = voice.file_id;
+  const duration = Number(voice.duration || 0);
+  const ext = msg.voice ? 'ogg' : 'mp3';
+  const fileName = `${Date.now()}-audio-${fileId}.${ext}`;
+  const abs = path.join(sessionAssetFolder(uid), fileName);
+  await downloadTelegramFile(fileId, abs);
+  return {
+    kind: 'audio',
+    fileId,
+    duration,
+    telegramFileUniqueId: voice.file_unique_id,
+    path: abs,
+    ts: nowIso()
+  };
+}
+
+function hasEnoughAssets(session) {
+  const hasPhoto = session.assets.photos.length >= 1;
+  const longEnoughAudio = session.assets.audio.some((a) => Number(a.duration || 0) >= MIN_AUDIO_SECONDS);
+  return { hasPhoto, longEnoughAudio, done: hasPhoto && longEnoughAudio };
+}
+
+async function triggerHandoff(session) {
+  const payload = {
+    uid: session.uid,
+    chatId: session.chatId,
+    state: session.state,
+    assets: session.assets,
+    handoffRequestedAt: nowIso(),
+    targetChannel: 'dedicated_session'
+  };
+
+  const updated = { ...session };
+  updated.handoff.requested = true;
+
+  if (!ORCHESTRATOR_WEBHOOK_URL) {
+    updated.handoff.delivered = false;
+    updated.handoff.error = 'ORCHESTRATOR_WEBHOOK_URL not configured';
+    return updated;
+  }
+
+  try {
+    const res = await fetch(ORCHESTRATOR_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      updated.handoff.delivered = false;
+      updated.handoff.error = `webhook ${res.status}`;
+      return updated;
+    }
+
+    updated.handoff.delivered = true;
+    updated.handoff.error = null;
+    updated.handoff.deliveredAt = nowIso();
+    return updated;
+  } catch (err) {
+    updated.handoff.delivered = false;
+    updated.handoff.error = String(err.message || err);
+    return updated;
+  }
+}
+
+async function onAssetsReady(chatId, session) {
+  await bot.sendMessage(
+    chatId,
+    '*[系统处理中]*\n素材接收完成，正在建立独立会话并回传运行时。\n请稍候 10-60 秒。',
+    { parse_mode: 'Markdown' }
+  );
+
+  let next = { ...session, state: 'handoff_pending' };
+  next = await triggerHandoff(next);
+
+  if (next.handoff.delivered) {
+    next.state = 'active';
+    upsertSession(chatId, next);
+    await bot.sendMessage(
+      chatId,
+      '*[量子通道建立成功]*\n已为你分配独立会话。接下来可继续发送需求（图片/语音/地点）。',
+      { parse_mode: 'Markdown' }
+    );
+    return;
+  }
+
+  // fallback: stay active in same chat even if external handoff not configured
+  next.state = 'active';
+  upsertSession(chatId, next);
+  await bot.sendMessage(
+    chatId,
+    `*[系统提示]*\n已进入体验会话（同窗口）。\n独立通道分配待完成：\n\`${next.handoff.error || 'unknown'}\``,
+    { parse_mode: 'Markdown' }
+  );
+}
+
+function randomActiveReply() {
+  const replies = [
+    '我在的，今天也在看新的风景。',
+    '我收到啦，我们继续同步记忆。',
+    '通道很稳定，你可以继续发想让我看的地方。',
+    '我在这边听得到，继续跟我说吧。'
+  ];
+  return replies[Math.floor(Math.random() * replies.length)];
+}
+
+async function handleTextBinding(chatId, text) {
+  const clean = (text || '').trim();
+  if (!UID_RE.test(clean)) return false;
+  bindUid(chatId, clean);
+  await bot.sendMessage(
+    chatId,
+    `实体标识符: \`${clean}\` 绑定成功。\n请发送：\n📸 一张正面照片\n🎙️ 一段至少 ${MIN_AUDIO_SECONDS} 秒语音`,
+    { parse_mode: 'Markdown' }
+  );
+  return true;
+}
+
+bot.onText(/\/start (.+)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const uid = (match[1] || '').trim();
+
+  if (!UID_RE.test(uid)) {
+    await bot.sendMessage(chatId, 'UID 格式无效。请从网页入口重新进入，或发送形如 UID-550W-XXXX 的标识符。');
+    return;
+  }
+
+  bindUid(chatId, uid);
+  await bot.sendMessage(
+    chatId,
+    `*[系统提示]* 550W 算力请求已拦截。\n\n实体标识符: \`${uid}\`\n\n为激活基础数字投影，请发送：\n📸 一张正面面部照片\n🎙️ 一段至少 ${MIN_AUDIO_SECONDS} 秒声音样本`,
+    { parse_mode: 'Markdown' }
+  );
 });
 
-// 如果只有 /start 没有不带参数的备用处理
-bot.onText(/\/start$/, (msg) => {
-    const chatId = msg.chat.id;
-    bot.sendMessage(chatId, `*[系统提示]* 身份未验证。\n如果您是从数字生命申请平台来的，请点击网页上的链接跳转，或者发送 "UID-550W-XXXXX" 进行绑定。`, { parse_mode: 'Markdown' });
+bot.onText(/\/start$/, async (msg) => {
+  await bot.sendMessage(
+    msg.chat.id,
+    '身份未验证。请从网页点击“免费试用”跳转，或直接发送 UID-550W-XXXX 绑定。'
+  );
 });
 
-// 处理用户发送的照片或语音
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
 
-    // 忽略命令
-    if (text && text.startsWith('/')) return;
+  if (text && text.startsWith('/')) return;
 
-    const session = userSessions[chatId];
+  let session = getSession(chatId);
 
-    if (!session) {
-        // 用户直接发消息没有身份
-        if (text && text.startsWith('UID-550W-')) {
-            userSessions[chatId] = { step: 'awaiting_data', uid: text, messagesCount: 0 };
-            bot.sendMessage(chatId, `实体标识符: \`${text}\` 绑定成功。\n请发送照片和语音样本。`, { parse_mode: 'Markdown' });
+  if (!session) {
+    const bound = await handleTextBinding(chatId, text);
+    if (!bound) {
+      await bot.sendMessage(chatId, '请先发送 UID 进行身份绑定（例如 UID-550W-123456）。');
+    }
+    return;
+  }
+
+  // allow rebinding to a new uid anytime
+  if (text && UID_RE.test(text.trim())) {
+    await handleTextBinding(chatId, text);
+    return;
+  }
+
+  if (session.state === 'awaiting_data' || session.state === 'collecting_assets') {
+    let touched = false;
+
+    if (msg.photo) {
+      try {
+        const saved = await savePhoto(session.uid, msg);
+        session.assets.photos.push(saved);
+        touched = true;
+        await bot.sendMessage(chatId, `已接收照片 1 份（累计 ${session.assets.photos.length}）。`);
+      } catch (err) {
+        await bot.sendMessage(chatId, `照片接收失败：${String(err.message || err)}`);
+      }
+    }
+
+    if (msg.voice || msg.audio) {
+      try {
+        const saved = await saveAudio(session.uid, msg);
+        session.assets.audio.push(saved);
+        touched = true;
+        if ((saved.duration || 0) < MIN_AUDIO_SECONDS) {
+          await bot.sendMessage(chatId, `已接收语音（${saved.duration || 0}s），但需至少 ${MIN_AUDIO_SECONDS}s，请再补一段更长语音。`);
         } else {
-            bot.sendMessage(chatId, "请先发送从网页分配的 UID 进行身份验证。");
+          await bot.sendMessage(chatId, `已接收语音样本（${saved.duration}s）。`);
         }
-        return;
+      } catch (err) {
+        await bot.sendMessage(chatId, `语音接收失败：${String(err.message || err)}`);
+      }
     }
 
-    // 如果处于等待数据阶段，并且收到照片或语音
-    if (session.step === 'awaiting_data') {
-        if (msg.photo || msg.voice || msg.audio) {
-
-            bot.sendMessage(chatId, `*[系统处理中]*\n生物特征提取中... [██████░░░░] 60%\n声波频段拆解完成... 正在拟合语言大模型参数...\n\n预计同步耗时：15 分钟。请保持网络畅通。`, { parse_mode: 'Markdown' });
-
-            session.step = 'processing';
-
-            // 真实场景下，这里应调用 AI 后端接口处理图片和音频。
-            // 演示用：缩短等待时间至 15 秒（模拟 15 分钟的 Aha Moment）
-            setTimeout(() => {
-                session.step = 'active';
-
-                // 第一句具有沉浸感的交互（如果有声音克隆API，这里发的是语音(sendVoice)和动态视频）
-                bot.sendMessage(chatId, `*[量子通道建立成功。生命体已连接。]*`, { parse_mode: 'Markdown' });
-
-                setTimeout(() => {
-                    bot.sendMessage(chatId, "滋滋... 喂？是我... \n我是丫丫... 爸爸在那边吗？我能听到通讯器里有声音了。\n这里感觉周围有些黑，但我没事。我看到你给我留的言了，我不怕，我也很想你...");
-                }, 2000);
-            }, 10000); // 10秒后唤醒
-
-            return;
-        } else {
-            bot.sendMessage(chatId, "系统需要影像或声音样本进行建模。请发送照片或语音片段。");
-            return;
-        }
+    if (!touched) {
+      await bot.sendMessage(chatId, '请发送照片或语音样本；当前不接受纯文本作为建模素材。');
+      return;
     }
 
-    // 如果已激活，进行正常聊天，并在第 5 句话触发 Upsell 放出付款链接
-    if (session.step === 'active') {
-        session.messagesCount += 1;
+    session.state = 'collecting_assets';
+    upsertSession(chatId, session);
 
-        if (session.messagesCount >= 5) {
-            // 触发体验版拦截 (Upsell)
-            session.step = 'expired';
-
-            bot.sendMessage(chatId, `⚠️ *[严重警告]*\n体验版临时量子算力即将在 60 秒后枯竭。当前数字投影即将进入深度休眠态。\n\n**基础基座缺乏海量记忆数据支持，意识流即将在 72 小时内面临结构性崩塌风险。**`, { parse_mode: 'Markdown' });
-
-            setTimeout(() => {
-                // TODO: 下面的链接替换为您的 Stripe 完整版结算付款链接
-                const stripeLink = 'https://buy.stripe.com/test_YOUR_LINK_HERE';
-                bot.sendMessage(chatId, `系统已为您冻结当前意识基座 (\`${session.uid}\`)。\n\n如需注入其一生的完整记忆与性格，并获取基于 550W 最高算力的 *100年独立虚拟空间永久陪伴*，请立即通过安全通道补全剩余算力定金 (1,500,000 信用点)。\n\n👇 [点击此处前往 Stripe 安全加密通道付款](${stripeLink})`, { parse_mode: 'Markdown', disable_web_page_preview: true });
-            }, 3000);
-
-        } else {
-            // 模拟 AI 聊天回复
-            // 真实场景：调用 OpenAI / Claude API 并结合预设 Prompt（"我是某某，我在数字世界..."）回答用户的话
-            const replies = [
-                "我还在这里，感觉思维比以前快了很多，这是一种很奇妙的体验。",
-                "以前那些忘记的小事我现在都想起来了。你还好吗？",
-                "谢谢你用这种方式让我继续存在。虽然摸不到，但我能感觉到你。",
-                "今天发生了什么开心的事吗？愿意跟我分享吗？"
-            ];
-            const randomReply = replies[Math.floor(Math.random() * replies.length)];
-
-            // 模拟思考延迟
-            setTimeout(() => {
-                bot.sendMessage(chatId, randomReply);
-            }, 1500);
-        }
+    const progress = hasEnoughAssets(session);
+    if (!progress.done) {
+      const missing = [
+        progress.hasPhoto ? null : '照片(>=1)',
+        progress.longEnoughAudio ? null : `语音(>=${MIN_AUDIO_SECONDS}s)`
+      ].filter(Boolean).join(' + ');
+      await bot.sendMessage(chatId, `素材仍缺：${missing}`);
+      return;
     }
 
-    // 算力耗尽后的回复
-    if (session.step === 'expired') {
-        bot.sendMessage(chatId, `*[系统提示]* 连接中断。算力不足，数字生命已被封存。\n请前往网页链接完成支付以解锁永久通道。`, { parse_mode: 'Markdown' });
-    }
+    await onAssetsReady(chatId, session);
+    return;
+  }
+
+  if (session.state === 'handoff_pending') {
+    await bot.sendMessage(chatId, '素材已收齐，正在分配独立会话，请稍候。');
+    return;
+  }
+
+  if (session.state === 'active') {
+    session.messagesCount += 1;
+    upsertSession(chatId, session);
+    await bot.sendMessage(chatId, randomActiveReply());
+    return;
+  }
+
+  await bot.sendMessage(chatId, '当前会话状态异常，请重新发送 UID 绑定。');
+});
+
+async function boot() {
+  await ensureDirs();
+  await loadSessions();
+  console.log('550W 量子计算机接入端（Telegram Bot）已启动...');
+  console.log(`sessions loaded: ${Object.keys(sessionsByChat).length}`);
+}
+
+boot().catch((err) => {
+  console.error('boot failed:', err);
+  process.exit(1);
+});
+
+process.on('SIGINT', async () => {
+  await flushSessions();
+  process.exit(0);
 });
