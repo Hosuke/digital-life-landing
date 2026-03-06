@@ -1,70 +1,56 @@
-# Product Manager Meeting Brief (English)
+# PM Meeting Brief (English, Investor-Oriented)
 
-## 1. One-line Product Definition
-Digital Life is a UID-driven digital companion system: users place an order on the website, move into Telegram/WhatsApp, upload starter assets, and get routed into a dedicated long-term conversation channel.
+## 1. Core Questions to Answer
+- Is this a real product solving a recurring need, not a short-lived novelty?
+- Can this flow generate stable conversion and recurring revenue?
+- Can it scale with controlled cost, compliance, and reliability?
 
-## 2. Value Proposition
-- Emotional value: persistent digital companionship for users/families.
-- UX value: no new app learning curve; interaction happens in familiar IM apps.
-- Operational value: UID connects acquisition, onboarding, allocation, and retention into one measurable funnel.
+## 2. Product Definition (Suggested Opening)
+Digital Life is a UID-driven digital companion product.
+Users start on web onboarding, move to IM for asset intake, the system initializes "Yaya," delivers a proactive first-contact response, and then converts trial engagement into a paid lifecycle.
 
-## 3. System Architecture (PM View)
-- Landing: acquisition + conversion + UID creation.
-- Control Plane: UID/session state management + channel allocation.
-- Bot Layer: onboarding, asset collection, messaging logic.
-- Channel Pool: assignable Telegram/WhatsApp sessions.
-- Storage/DB: media assets + orders + session records.
+## 3. User Problem and Product Solution
+- Problem: emotional continuity is missing in generic chatbot experiences.
+- Solution:
+  - UID creates identity continuity;
+  - minimum assets enable fast first contact;
+  - "init complete -> proactive feedback" creates emotional realism.
 
-## 4. Operating Model
-### 4.1 User Segments
-- Trial users: 1 photo + 10s voice for fast first experience.
-- Full users: longer lifecycle service with richer media and personalization.
+## 4. Critical Product Loop (Must Explain Clearly)
+1. Web generates UID and deep-links to IM.
+2. Bot collects photo/voice and triggers Yaya initialization.
+3. After initialization, bot proactively sends first-contact feedback.
+4. User enters trial conversation rounds.
+5. Threshold gating triggers upgrade into paid lifecycle.
 
-### 4.2 Daily Operating Rhythm
-- Acquisition: social/video/community campaigns drive traffic to landing.
-- Activation: UID deep link to TG/WA and complete first asset collection.
-- Retention: regular conversation prompts, seasonal and event-based interactions.
-- Expansion: trial-to-paid conversion, family bundles, premium add-ons.
+## 5. Why This Loop Is Commercially Meaningful
+- Repeatable acquisition via web conversion entry.
+- Observable middle funnel via initialization/session states.
+- Operable conversion timing from Trial to Paid.
+- Retention and expansion via event-driven engagement.
 
-### 4.3 Core Metrics
-- Landing -> Bot click-through rate
-- UID binding success rate
-- Asset completion rate (photo + voice)
-- Day-7 / Day-30 retention
-- Trial -> Paid conversion
-- ARPU / LTV / CAC payback period
+## 6. Operating Model (Productized, Not Manual-Heavy)
+- Automated: UID issuance, bind, asset validation, init queue, upsell triggers.
+- Human fallback: failed init tickets, high-value users, moderation/risk review.
+- Cadence: day-0 activation, day-7 reactivation, event-based nudges.
 
-## 5. Customer Interaction Journey
-- Entry: user submits landing form and receives UID.
-- Verification: clicks deep link to Telegram/WhatsApp.
-- Initial intake: uploads photo + voice samples.
-- Session phase: enters dedicated channel for text/voice/media interaction.
-- Ongoing service: proactive touchpoints around birthdays/anniversaries/events.
+## 7. Metrics Investors Will Care About
+- Conversion: Landing->IM CTR, asset completion, Trial->Paid
+- Retention: D7, D30, conversation depth
+- Economics: ARPU, LTV/CAC, gross margin trend
+- Reliability: init success rate, message delivery success, complaint rate
 
-## 6. Monetization and Growth Model
-### 6.1 Monetization
-- Subscription plans: monthly/quarterly/annual companion service.
-- Tiered bundles: text-only, multimedia, premium customization.
-- B2B/B2B2C: white-label deployments for partner organizations.
+## 8. Cost Structure and Scalability
+- Major costs: model calls, messaging channels, operations support
+- Control levers: model-tier routing, inventory fallback, trial thresholds, async queues
+- Scalability: clear separation between control-plane and runtime enables horizontal growth
 
-### 6.2 Growth Levers
-- Funnel optimization: reduce drop-off from UID issuance to asset completion.
-- Channel expansion: from Telegram to WhatsApp and additional ecosystems.
-- Use-case expansion: memorial, education companion, family archive, branded persona.
+## 9. Milestone Commitments for Investors
+- 8-12 week validation: Aha completion, Trial->Paid, D30 retention
+- If targets are met: scale channels, scenarios, and pricing tiers
+- If targets are missed: narrow to higher-intent verticals or B2B paths
 
-## 7. Cost Drivers
-- Inference/generation: LLM + image/video API calls.
-- Infrastructure: compute, database, object storage, monitoring.
-- Messaging: WhatsApp BSP conversation/template fees.
-- Human ops: content ops, support, moderation/risk handling.
-- Security/compliance: audit logs, backups, key management.
-
-## 8. Risks and Mitigations
-- Generation quality variance -> media inventory + fallback strategy.
-- Session reliability -> control-plane state machine + retry queue.
-- Privacy/compliance -> minimal data collection, encrypted storage, access audit.
-
-## 9. Meeting Talk Strategy
-- Start with user value, then show technical execution.
-- Use funnel metrics + unit economics to answer business feasibility.
-- Position current stage as MVP with fast learning cycles before scale.
+## 10. Post-Meeting Actions
+- Publish a weekly KPI dashboard
+- Align next validation window and threshold targets
+- Clarify ownership boundaries between product/ops/engineering
