@@ -1,4 +1,4 @@
-# Onboarding Bot
+# Telegram Onboarding Bot
 
 ## Run
 ```bash
@@ -9,19 +9,28 @@ cp .env.example .env
 node server.js
 ```
 
+## Env
+- `TELEGRAM_BOT_TOKEN`: Telegram bot token
+- `MIN_AUDIO_SECONDS`: minimum required audio duration (default 10)
+- `BOT_DATA_DIR`: local bot persistence directory
+- `CONTROL_PLANE_BASE_URL`: control-plane base URL (recommended)
+- `CONTROL_PLANE_KEY`: shared secret for control-plane internal APIs
+- `PREFERRED_CHANNEL_KINDS`: e.g. `telegram,whatsapp`
+- `ORCHESTRATOR_WEBHOOK_URL`: legacy handoff webhook fallback
+
 ## Flow
-1. User enters from landing page and opens TG deep link with `/start UID-550W-xxxx`
-2. Bot binds uid + chat
+1. User enters from landing page with `/start UID-550W-...`
+2. Bot binds uid + chat and notifies control-plane (`/api/bind`)
 3. Bot collects assets:
 - at least 1 photo
 - at least 1 audio/voice with duration >= `MIN_AUDIO_SECONDS`
 4. Bot stores files under `BOT_DATA_DIR/assets/<uid>/`
-5. Bot triggers handoff callback (`ORCHESTRATOR_WEBHOOK_URL`) if configured
-6. Bot marks session active and keeps conversation alive
+5. Bot calls control-plane handoff (`/api/handoff`) for dedicated channel allocation
+6. If allocation fails, bot keeps current chat active as degraded mode
 
 ## Persistence
-- `BOT_DATA_DIR/sessions.json` stores session state machine and asset metadata
+- `BOT_DATA_DIR/sessions.json`: bot session state + asset metadata
 
 ## Notes
-- If webhook is not configured, bot still enters active mode in same TG chat (degraded but usable)
-- Use a backend webhook to allocate dedicated TG/WhatsApp session in production
+- Bot will never echo internal shell commands to user chat.
+- In production, set `CONTROL_PLANE_KEY` and rotate bot token regularly.

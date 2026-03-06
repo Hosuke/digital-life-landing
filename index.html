@@ -282,6 +282,12 @@
 
     <!-- Stripe JS -->
     <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        window.DIGITAL_LIFE_CONFIG = Object.assign({
+            controlPlaneBaseUrl: '',
+            telegramBotUsername: 'splandour_550w_bot'
+        }, window.DIGITAL_LIFE_CONFIG || {});
+    </script>
     <script src="script.js"></script>
 </body>
 

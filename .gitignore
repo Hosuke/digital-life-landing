@@ -1,9 +1,17 @@
 # Node.js dependencies
 bot/node_modules/
+control-plane/node_modules/
 bot/npm-debug.log*
+control-plane/npm-debug.log*
 
 # Environment variables (NEVER COMMIT THIS)
 bot/.env
+control-plane/.env
 
 # MacOS system files
 .DS_Store
+
+# Runtime/session data
+bot/data/
+control-plane/data/db.json
+control-plane/data/channel-pool.json

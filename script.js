@@ -112,7 +112,7 @@ document.querySelectorAll('.fade-in').forEach(el => observers.observe(el));
 const applyForm = document.getElementById('applyForm');
 const modal = document.getElementById('successModal');
 const submitBtn = document.getElementById('submitBtn');
-const submitBtnText = document.getElementById('submitBtnText');
+const getSubmitBtnText = () => document.getElementById('submitBtnText');
 const seqNumber = document.getElementById('sequenceNumber');
 const stripePaymentForm = document.getElementById('stripe-payment-form');
 const submitStripeBtn = document.getElementById('submitStripeBtn');
@@ -188,6 +188,56 @@ const modalTitle = modal.querySelector('h2');
 const modalDesc = modal.querySelector('.modal-desc');
 
 let currentPlan = 'trial';
+const PAGE_CONFIG = window.DIGITAL_LIFE_CONFIG || {};
+const CONTROL_PLANE_BASE_URL = String(PAGE_CONFIG.controlPlaneBaseUrl || '').trim().replace(/\/+$/, '');
+const TELEGRAM_BOT_USERNAME = String(PAGE_CONFIG.telegramBotUsername || 'splandour_550w_bot').trim();
+
+function generateFallbackUid() {
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    return `UID-550W-${rand}`;
+}
+
+function defaultDeepLink(uid) {
+    return `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${uid}`;
+}
+
+async function submitApplyOrder() {
+    const payload = {
+        planType: currentPlan,
+        applicant: document.getElementById('applicant').value.trim(),
+        subject: document.getElementById('subject').value.trim(),
+        relation: document.getElementById('relation').value.trim(),
+        message: document.getElementById('message').value.trim(),
+        source: 'landing'
+    };
+
+    if (!CONTROL_PLANE_BASE_URL) {
+        const uid = generateFallbackUid();
+        return {
+            uid,
+            telegramDeepLink: defaultDeepLink(uid),
+            fallback: true
+        };
+    }
+
+    const res = await fetch(`${CONTROL_PLANE_BASE_URL}/api/apply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.uid) {
+        throw new Error(data.error || 'apply_failed');
+    }
+
+    return {
+        uid: data.uid,
+        telegramDeepLink: data.telegramDeepLink || defaultDeepLink(data.uid),
+        statusUrl: data.statusUrl || '',
+        fallback: false
+    };
+}
 
 // Handle plan change
 planRadios.forEach(radio => {
@@ -197,7 +247,7 @@ planRadios.forEach(radio => {
             dataCheckgroup.style.display = 'block';
             checkoutSummary.style.display = 'block';
             trialCheckgroup.style.display = 'none';
-            submitBtnText.textContent = '支付定金并生成排期密匙';
+            getSubmitBtnText().textContent = '支付定金并生成排期密匙';
 
             checkPhoto.required = true;
             checkVideo.required = true;
@@ -207,7 +257,7 @@ planRadios.forEach(radio => {
             dataCheckgroup.style.display = 'none';
             checkoutSummary.style.display = 'none';
             trialCheckgroup.style.display = 'block';
-            submitBtnText.textContent = '提交基础数据并开启体验';
+            getSubmitBtnText().textContent = '提交基础数据并开启体验';
 
             checkPhoto.required = false;
             checkVideo.required = false;
@@ -219,20 +269,20 @@ planRadios.forEach(radio => {
 
 // Removed dummy stripe payment link
 
-applyForm.addEventListener('submit', (e) => {
+applyForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     // Animate button
-    const originalText = submitBtnText.textContent;
+    const originalText = getSubmitBtnText().textContent;
     submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在连接量子计算机...';
     submitBtn.style.opacity = '0.8';
     submitBtn.disabled = true;
 
-    // Simulate process
-    setTimeout(() => {
-        // Generate UID
-        const rand = Math.floor(100000 + Math.random() * 900000);
-        const uid = `UID-550W-${rand}`;
+    try {
+        // Keep a short animation even when backend responds very quickly
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const applyResult = await submitApplyOrder();
+        const uid = applyResult.uid;
         seqNumber.textContent = uid;
         seqNumber.setAttribute('data-text', uid); // For glitch effect
 
@@ -255,8 +305,7 @@ applyForm.addEventListener('submit', (e) => {
             stripePaymentForm.style.display = 'none';
 
             // Generate IM Deep Link Button (e.g., Telegram)
-            const telegramBotUsername = 'splandour_550w_bot'; // Replace with actual bot username
-            const deepLinkUrl = `https://t.me/${telegramBotUsername}?start=${uid}`;
+            const deepLinkUrl = applyResult.telegramDeepLink || defaultDeepLink(uid);
 
             // Check if button already exists, if not create it
             let imBtn = document.getElementById('imDeepLinkBtn');
@@ -273,15 +322,16 @@ applyForm.addEventListener('submit', (e) => {
                 stripePaymentForm.parentNode.insertBefore(imBtn, stripePaymentForm.nextSibling);
             }
             imBtn.href = deepLinkUrl;
+
+            if (applyResult.fallback) {
+                modalDesc.innerHTML += '<br><small style="color:#ffad33;"><i class="fa-solid fa-triangle-exclamation"></i> 当前后端不可用，已使用本地演示 UID。</small>';
+            } else if (applyResult.statusUrl) {
+                modalDesc.innerHTML += `<br><small style="color: rgba(255,255,255,0.65);">状态查询：${applyResult.statusUrl}</small>`;
+            }
         }
 
         // Show Modal
         modal.classList.add('active');
-
-        // Reset form btn
-        submitBtn.innerHTML = `<span class="btn-text" id="submitBtnText">${originalText}</span><i class="fa-solid fa-fingerprint"></i>`;
-        submitBtn.style.opacity = '1';
-        submitBtn.disabled = false;
         applyForm.reset();
 
         // Reset to default plan state
@@ -293,7 +343,15 @@ applyForm.addEventListener('submit', (e) => {
         checkVideo.required = false;
         checkAudio.required = false;
         checkTrialData.required = true;
-    }, 2000);
+    } catch (err) {
+        console.error('submit apply order failed:', err);
+        alert('提交失败：后端暂时不可用，请稍后重试。');
+    } finally {
+        // Reset form btn
+        submitBtn.innerHTML = `<span class="btn-text" id="submitBtnText">${originalText}</span><i class="fa-solid fa-fingerprint"></i>`;
+        submitBtn.style.opacity = '1';
+        submitBtn.disabled = false;
+    }
 });
 
 window.closeModal = () => {

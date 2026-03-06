@@ -1,0 +1,23 @@
+[
+  {
+    "id": "tg-worker-01",
+    "kind": "telegram",
+    "label": "Telegram Worker 01",
+    "entrypoint": "https://t.me/splandour_550w_bot",
+    "enabled": true
+  },
+  {
+    "id": "wa-worker-01",
+    "kind": "whatsapp",
+    "label": "WhatsApp Worker 01",
+    "entrypoint": "https://wa.me/10000000001",
+    "enabled": true
+  },
+  {
+    "id": "wa-worker-02",
+    "kind": "whatsapp",
+    "label": "WhatsApp Worker 02",
+    "entrypoint": "https://wa.me/10000000002",
+    "enabled": true
+  }
+]
