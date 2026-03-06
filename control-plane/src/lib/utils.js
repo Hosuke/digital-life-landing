@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const PAYMENT_STATUS_SET = new Set(['pending', 'paid', 'waived', 'failed', 'refunded', 'canceled']);
 
 function nowIso() {
   return new Date().toISOString();
@@ -6,6 +7,69 @@ function nowIso() {
 
 function normalizeText(value, maxLen = 512) {
   return String(value || '').trim().slice(0, maxLen);
+}
+
+function normalizePlanType(value) {
+  return normalizeText(value, 16).toLowerCase() || 'trial';
+}
+
+function resolveFreePlanTypes(raw) {
+  const source = raw === undefined || raw === null ? 'trial,demo' : String(raw);
+  const normalized = source
+    .split(',')
+    .map((item) => normalizePlanType(item))
+    .filter(Boolean);
+  return new Set(normalized.length ? normalized : ['trial', 'demo']);
+}
+
+function deriveInitialPaymentStatus(planType, freePlanTypes) {
+  const normalizedPlan = normalizePlanType(planType);
+  const freeSet = freePlanTypes instanceof Set ? freePlanTypes : resolveFreePlanTypes(freePlanTypes);
+  return freeSet.has(normalizedPlan) ? 'waived' : 'pending';
+}
+
+function normalizePaymentStatus(value, fallback = 'pending') {
+  const raw = normalizeText(value, 32).toLowerCase();
+  if (PAYMENT_STATUS_SET.has(raw)) return raw;
+  if (!fallback) return '';
+  const fallbackRaw = normalizeText(fallback, 32).toLowerCase();
+  if (PAYMENT_STATUS_SET.has(fallbackRaw)) return fallbackRaw;
+  return 'pending';
+}
+
+function evaluateHandoffPaymentEligibility(order, options = {}) {
+  if (!order) {
+    return { allowed: false, reason: 'order_not_found', paymentStatus: 'pending' };
+  }
+
+  const requirePaymentForHandoff = options.requirePaymentForHandoff !== false;
+  const freeSet = options.freePlanTypes instanceof Set
+    ? options.freePlanTypes
+    : resolveFreePlanTypes(options.freePlanTypes);
+  const planType = normalizePlanType(order.planType);
+  const impliedDefault = freeSet.has(planType) ? 'waived' : 'pending';
+  const paymentStatus = normalizePaymentStatus(order.paymentStatus, impliedDefault);
+
+  if (!requirePaymentForHandoff) {
+    return { allowed: true, reason: 'payment_gate_disabled', paymentStatus };
+  }
+
+  if (paymentStatus === 'paid' || paymentStatus === 'waived') {
+    return { allowed: true, reason: 'payment_ok', paymentStatus };
+  }
+
+  const reasonByStatus = {
+    pending: 'payment_pending',
+    failed: 'payment_failed',
+    refunded: 'payment_refunded',
+    canceled: 'payment_canceled'
+  };
+
+  return {
+    allowed: false,
+    reason: reasonByStatus[paymentStatus] || 'payment_required',
+    paymentStatus
+  };
 }
 
 function uidDateStamp() {
@@ -90,6 +154,11 @@ function mergeSession(current, patch) {
 module.exports = {
   nowIso,
   normalizeText,
+  normalizePlanType,
+  resolveFreePlanTypes,
+  deriveInitialPaymentStatus,
+  normalizePaymentStatus,
+  evaluateHandoffPaymentEligibility,
   generateUidCandidate,
   issueUid,
   normalizeChannel,

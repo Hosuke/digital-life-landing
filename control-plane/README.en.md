@@ -41,6 +41,7 @@ docker compose up --build
 - `POST /api/apply`
 - `POST /api/bind`
 - `POST /api/handoff` (allocation + runtime provisioning trigger)
+- `POST /api/order/payment` (payment callback/manual payment patch)
 - `POST /api/allocate-channel`
 - `POST /api/release-channel`
 - `POST /api/runtime/callback` (async runtime status callback)
@@ -59,3 +60,8 @@ docker compose up --build
 ## Security
 - Keep `CONTROL_PLANE_KEY` enabled in production.
 - Internal bot requests should include `x-control-plane-key`.
+
+## Payment Gate Config
+- `REQUIRE_PAYMENT_FOR_HANDOFF=true`: only `paid/waived` orders can enter `/api/handoff`
+- `FREE_PLAN_TYPES=trial,demo`: these plans are auto-marked as `waived` at order creation
+- Supported payment statuses: `pending | paid | waived | failed | refunded | canceled`

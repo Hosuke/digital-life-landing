@@ -25,6 +25,12 @@ function mapOrderRow(row) {
     orderId: row.order_id,
     uid: row.uid,
     planType: row.plan_type,
+    paymentStatus: row.payment_status || 'pending',
+    paymentProvider: row.payment_provider || null,
+    paymentReference: row.payment_reference || null,
+    paymentMessage: row.payment_message || null,
+    paidAt: toIso(row.paid_at),
+    paymentUpdatedAt: toIso(row.payment_updated_at),
     applicant: row.applicant,
     subject: row.subject,
     relation: row.relation,
@@ -115,6 +121,12 @@ function createPostgresStore(config) {
     if (!exists) {
       throw new Error('schema_not_ready: run `npm run db:init` in control-plane first');
     }
+    await pool.query("ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS payment_status TEXT NOT NULL DEFAULT 'pending'");
+    await pool.query('ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS payment_provider TEXT NULL');
+    await pool.query('ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS payment_reference TEXT NULL');
+    await pool.query('ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS payment_message TEXT NULL');
+    await pool.query('ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS paid_at TIMESTAMPTZ NULL');
+    await pool.query('ALTER TABLE cp_orders ADD COLUMN IF NOT EXISTS payment_updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()');
     await pool.query('ALTER TABLE cp_sessions ADD COLUMN IF NOT EXISTS runtime JSONB NULL');
   }
 
@@ -336,12 +348,21 @@ function createPostgresStore(config) {
         const createdAt = nowIso();
         const orderId = crypto.randomUUID();
         await client.query(
-          `INSERT INTO cp_orders(order_id, uid, plan_type, applicant, subject, relation, message, source, created_at, updated_at)
-           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$9)`,
+          `INSERT INTO cp_orders(
+             order_id, uid, plan_type, payment_status, payment_provider, payment_reference, payment_message,
+             paid_at, payment_updated_at, applicant, subject, relation, message, source, created_at, updated_at
+           )
+           VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$15)`,
           [
             orderId,
             uid,
             input.planType,
+            input.paymentStatus || 'pending',
+            null,
+            null,
+            null,
+            null,
+            new Date(createdAt),
             input.applicant,
             input.subject,
             input.relation,
@@ -359,7 +380,51 @@ function createPostgresStore(config) {
           updatedAt: createdAt
         });
 
-        return { uid, orderId };
+        return { uid, orderId, paymentStatus: input.paymentStatus || 'pending' };
+      });
+    },
+
+    async updateOrderPayment(input) {
+      return withTx(async (client) => {
+        const existingRow = (await client.query(
+          'SELECT * FROM cp_orders WHERE uid = $1 FOR UPDATE',
+          [input.uid]
+        )).rows[0];
+
+        if (!existingRow) {
+          return null;
+        }
+
+        const now = nowIso();
+        const nextPaymentStatus = input.paymentStatus || existingRow.payment_status || 'pending';
+        const nextPaidAt = input.paidAt !== undefined
+          ? (input.paidAt ? new Date(input.paidAt) : null)
+          : (nextPaymentStatus === 'paid'
+            ? (existingRow.paid_at || new Date(now))
+            : existingRow.paid_at);
+
+        const updatedRow = (await client.query(
+          `UPDATE cp_orders
+           SET payment_status = $2,
+               payment_provider = $3,
+               payment_reference = $4,
+               payment_message = $5,
+               paid_at = $6,
+               payment_updated_at = NOW(),
+               updated_at = NOW()
+           WHERE uid = $1
+           RETURNING *`,
+          [
+            input.uid,
+            nextPaymentStatus,
+            input.paymentProvider !== undefined ? input.paymentProvider : (existingRow.payment_provider || null),
+            input.paymentReference !== undefined ? input.paymentReference : (existingRow.payment_reference || null),
+            input.paymentMessage !== undefined ? input.paymentMessage : (existingRow.payment_message || null),
+            nextPaidAt
+          ]
+        )).rows[0];
+
+        return mapOrderRow(updatedRow);
       });
     },
 

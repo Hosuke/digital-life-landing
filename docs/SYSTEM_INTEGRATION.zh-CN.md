@@ -39,7 +39,7 @@ flowchart LR
 - Landing（前端入口）
   - 职责：获客、收集基础信息、发起 UID、触发 Deep Link
   - 状态：`已实现`（UID 创建）
-  - 待补：`规划中`（支付确认与风控）
+  - 待补：`规划中`（前端支付接入与风控）；`已实现`（后端支付门禁与支付状态更新接口）
 - Telegram Bot（体验交互入口）
   - 职责：绑定 UID、采集素材、给用户进度反馈
   - 状态：`已实现`
@@ -56,7 +56,7 @@ flowchart LR
 ## 4. 端到端流程（含交互细节）
 1. 用户进入 Landing，填写基础信息与体验诉求。  
 2. Landing 调用 `POST /api/apply`，生成唯一 UID（例如 `UID-550W-XXXXXX`）。  
-3. （规划中）支付系统完成扣款或体验资格校验，写入订单状态。  
+3. 支付系统（或人工补单）通过 `POST /api/order/payment` 更新订单支付状态。  
 4. 页面展示 UID + Deep Link，用户点击跳转 TG Bot。  
 5. Bot 收到 `/start UID-...`，调用 `POST /api/bind` 绑定 `uid + chatId`。  
 6. Bot 引导用户上传初始化素材（至少 1 张照片 + 至少 10 秒语音）。  

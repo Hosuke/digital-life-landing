@@ -42,6 +42,7 @@ docker compose up --build
 - `POST /api/apply`：官网创建 UID
 - `POST /api/bind`：bot 绑定 `uid <-> tg chat`
 - `POST /api/handoff`：素材齐后请求分配独立会话，并触发运行时实例化
+- `POST /api/order/payment`：更新订单支付状态（支付回调/人工补单）
 - `POST /api/allocate-channel`：手动分配（运维）
 - `POST /api/release-channel`：释放会话占用
 - `POST /api/runtime/callback`：运行时异步回传实例化状态
@@ -60,6 +61,11 @@ docker compose up --build
 ## 鉴权
 - 默认可不设密钥（方便本地联调）。
 - 生产务必设置 `CONTROL_PLANE_KEY`，并让 bot 请求头携带 `x-control-plane-key`。
+
+## 支付门禁配置
+- `REQUIRE_PAYMENT_FOR_HANDOFF=true`：开启后，只有 `paid/waived` 订单可进入 `/api/handoff`
+- `FREE_PLAN_TYPES=trial,demo`：这些计划类型在创建订单时自动标记为 `waived`
+- 支持的支付状态：`pending | paid | waived | failed | refunded | canceled`
 
 ## 数据文件（JSON 模式）
 - `data/db.json`

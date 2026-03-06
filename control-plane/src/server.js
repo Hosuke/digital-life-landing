@@ -2,13 +2,23 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { createStoreFromEnv, resolveStorageConfig } = require('./storage');
-const { normalizeText, nowIso } = require('./lib/utils');
+const {
+  normalizeText,
+  normalizePlanType,
+  normalizePaymentStatus,
+  resolveFreePlanTypes,
+  deriveInitialPaymentStatus,
+  evaluateHandoffPaymentEligibility,
+  nowIso
+} = require('./lib/utils');
 const { createRuntimeOrchestratorFromEnv } = require('./runtime/orchestrator');
 
 const PORT = Number(process.env.PORT || 8787);
 const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
 const TG_BOT_USERNAME = process.env.TG_BOT_USERNAME || 'splandour_550w_bot';
 const CONTROL_PLANE_KEY = process.env.CONTROL_PLANE_KEY || '';
+const REQUIRE_PAYMENT_FOR_HANDOFF = String(process.env.REQUIRE_PAYMENT_FOR_HANDOFF || 'true').trim().toLowerCase() !== 'false';
+const FREE_PLAN_TYPES = resolveFreePlanTypes(process.env.FREE_PLAN_TYPES);
 
 function internalAuth(req, res, next) {
   if (!CONTROL_PLANE_KEY) {
@@ -46,6 +56,8 @@ async function main() {
       service: 'digital-life-control-plane',
       mode: store.mode,
       runtimeMode: runtimeOrchestrator.mode,
+      requirePaymentForHandoff: REQUIRE_PAYMENT_FOR_HANDOFF,
+      freePlanTypes: Array.from(FREE_PLAN_TYPES),
       now: nowIso(),
       channelPoolSize: health.channelPoolSize,
       activeAssignments: health.activeAssignments
@@ -53,7 +65,8 @@ async function main() {
   }));
 
   app.post('/api/apply', asyncHandler(async (req, res) => {
-    const planType = normalizeText(req.body?.planType, 16) || 'trial';
+    const planType = normalizePlanType(req.body?.planType);
+    const paymentStatus = deriveInitialPaymentStatus(planType, FREE_PLAN_TYPES);
     const applicant = normalizeText(req.body?.applicant, 128);
     const subject = normalizeText(req.body?.subject, 128);
     const relation = normalizeText(req.body?.relation, 64);
@@ -66,6 +79,7 @@ async function main() {
 
     const created = await store.createApplyOrder({
       planType,
+      paymentStatus,
       applicant,
       subject,
       relation,
@@ -79,6 +93,7 @@ async function main() {
       ok: true,
       uid: created.uid,
       orderId: created.orderId,
+      paymentStatus: created.paymentStatus || paymentStatus,
       telegramDeepLink: deepLink,
       statusUrl: `${PUBLIC_BASE_URL}/api/session/${created.uid}/status`
     });
@@ -111,6 +126,25 @@ async function main() {
     const uid = normalizeText(req.body?.uid, 128);
     if (!uid) {
       return res.status(400).json({ ok: false, error: 'uid required' });
+    }
+
+    const before = await store.getStatus(uid);
+    if (!before?.exists || !before.order) {
+      return res.status(404).json({ ok: false, error: 'uid not found' });
+    }
+
+    const paymentGate = evaluateHandoffPaymentEligibility(before.order, {
+      requirePaymentForHandoff: REQUIRE_PAYMENT_FOR_HANDOFF,
+      freePlanTypes: FREE_PLAN_TYPES
+    });
+    if (!paymentGate.allowed) {
+      return res.status(402).json({
+        ok: false,
+        error: paymentGate.reason,
+        uid,
+        orderId: before.order.orderId,
+        paymentStatus: paymentGate.paymentStatus
+      });
     }
 
     const chatIdRaw = req.body?.chatId;
@@ -150,6 +184,48 @@ async function main() {
       assignment: result.assignment,
       runtime
     });
+  }));
+
+  app.post('/api/order/payment', internalAuth, asyncHandler(async (req, res) => {
+    const uid = normalizeText(req.body?.uid, 128);
+    if (!uid) {
+      return res.status(400).json({ ok: false, error: 'uid required' });
+    }
+
+    const paymentStatus = normalizePaymentStatus(req.body?.paymentStatus, '');
+    if (!paymentStatus) {
+      return res.status(400).json({
+        ok: false,
+        error: 'invalid paymentStatus',
+        expected: ['pending', 'paid', 'waived', 'failed', 'refunded', 'canceled']
+      });
+    }
+
+    const paymentProvider = normalizeText(req.body?.paymentProvider, 64) || null;
+    const paymentReference = normalizeText(req.body?.paymentReference, 128) || null;
+    const paymentMessage = normalizeText(req.body?.paymentMessage, 512) || null;
+    const paidAtRaw = normalizeText(req.body?.paidAt, 64);
+    if (paidAtRaw) {
+      const parsedPaidAt = new Date(paidAtRaw);
+      if (Number.isNaN(parsedPaidAt.getTime())) {
+        return res.status(400).json({ ok: false, error: 'invalid paidAt' });
+      }
+    }
+
+    const order = await store.updateOrderPayment({
+      uid,
+      paymentStatus,
+      paymentProvider,
+      paymentReference,
+      paymentMessage,
+      paidAt: paidAtRaw || undefined
+    });
+
+    if (!order) {
+      return res.status(404).json({ ok: false, error: 'uid not found' });
+    }
+
+    return res.json({ ok: true, uid, order });
   }));
 
   app.post('/api/allocate-channel', internalAuth, asyncHandler(async (req, res) => {

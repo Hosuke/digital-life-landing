@@ -166,6 +166,12 @@ function createJsonStore(config) {
         orderId: crypto.randomUUID(),
         uid,
         planType: input.planType,
+        paymentStatus: input.paymentStatus || 'pending',
+        paymentProvider: null,
+        paymentReference: null,
+        paymentMessage: null,
+        paidAt: null,
+        paymentUpdatedAt: createdAt,
         applicant: input.applicant,
         subject: input.subject,
         relation: input.relation,
@@ -185,7 +191,41 @@ function createJsonStore(config) {
       });
 
       await flushState();
-      return { uid, orderId: order.orderId };
+      return { uid, orderId: order.orderId, paymentStatus: order.paymentStatus };
+    },
+
+    async updateOrderPayment(input) {
+      const current = state.ordersByUid[input.uid];
+      if (!current) {
+        return null;
+      }
+
+      const updatedAt = nowIso();
+      const paymentStatus = input.paymentStatus || current.paymentStatus || 'pending';
+      const nextPaidAt = input.paidAt !== undefined
+        ? (input.paidAt || null)
+        : (paymentStatus === 'paid' ? (current.paidAt || updatedAt) : current.paidAt || null);
+
+      const next = {
+        ...current,
+        paymentStatus,
+        paymentProvider: input.paymentProvider !== undefined
+          ? input.paymentProvider
+          : (current.paymentProvider || null),
+        paymentReference: input.paymentReference !== undefined
+          ? input.paymentReference
+          : (current.paymentReference || null),
+        paymentMessage: input.paymentMessage !== undefined
+          ? input.paymentMessage
+          : (current.paymentMessage || null),
+        paidAt: nextPaidAt,
+        paymentUpdatedAt: updatedAt,
+        updatedAt
+      };
+
+      state.ordersByUid[input.uid] = next;
+      await flushState();
+      return next;
     },
 
     async bindSession(input) {
