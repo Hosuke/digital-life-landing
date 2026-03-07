@@ -162,14 +162,14 @@ if (submitStripeBtn) {
             const errorElement = document.getElementById('card-errors');
             errorElement.textContent = error.message;
             submitStripeBtn.disabled = false;
-            submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 1,500,000 信用点';
+            submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 $50.00';
         } else {
             // Success Demo Effect
             setTimeout(() => {
                 alert('支付授权成功！您刚刚生成了一个安全的 Stripe Token: ' + token.id + '。（注：由于此页面为纯前端 GitHub Pages，此交易处于演示模式，未产生实际收费。如需真实扣款需配合后端接口。）');
                 closeModal();
                 submitStripeBtn.disabled = false;
-                submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 1,500,000 信用点';
+                submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 $50.00';
                 cardElement.clear();
             }, 1000);
         }
@@ -391,7 +391,7 @@ applyForm.addEventListener('submit', async (e) => {
 
         if (currentPlan === 'full') {
             modalTitle.textContent = '算力排期请求已建立';
-            modalDesc.innerHTML = '新生命构建从确认您的专属 UID 开始。<br>请完成定金支付以正式锁定 550W 算力周期，当前算力预估需要等待：<span class="highlight">1.4 年</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级安全加密保障</small>';
+            modalDesc.innerHTML = '请完成首月定金支付以正式激活您的数字生命卡。<br>系统将为您分配专属 550W 算力信道用于全模态模型生成与通讯应用集成。<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级网络安全加密保障</small>';
             stripePaymentForm.style.display = 'block';
             removeImDeepLinkButton();
             latestFullPlanContext = {

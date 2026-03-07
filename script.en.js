@@ -162,14 +162,14 @@ if (submitStripeBtn) {
             const errorElement = document.getElementById('card-errors');
             errorElement.textContent = error.message;
             submitStripeBtn.disabled = false;
-            submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> Secure Pay 1,500,000 Credits';
+            submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> Secure Pay $50.00';
         } else {
             // Success Demo Effect
             setTimeout(() => {
                 alert('Payment authorized! You\'ve generated a secure Stripe Token: ' + token.id + '. (Note: As this is a pure frontend page, this transaction is in demo mode and no actual charge was made.)');
                 closeModal();
                 submitStripeBtn.disabled = false;
-                submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> Secure Pay 1,500,000 Credits';
+                submitStripeBtn.innerHTML = '<i class="fa-brands fa-stripe" style="font-size: 1.5rem; margin-right: 5px;"></i> Secure Pay $50.00';
                 cardElement.clear();
             }, 1000);
         }
@@ -391,7 +391,7 @@ applyForm.addEventListener('submit', async (e) => {
 
         if (currentPlan === 'full') {
             modalTitle.textContent = 'Compute scheduling request established';
-            modalDesc.innerHTML = 'New life construction starts by confirming your unique UID.<br>Please complete the deposit to officially lock your 550W cycle. Current wait estimate: <span class="highlight">1.4 Years</span><br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> Payment protected by enterprise-grade Stripe encryption</small>';
+            modalDesc.innerHTML = 'Please complete the first month payment to officially activate your Digital Life Card.<br>The system will allocate an exclusive 550W cycle for your multi-modal generative needs and messaging integrations.<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> Payment protected by enterprise-grade Stripe encryption</small>';
             stripePaymentForm.style.display = 'block';
             removeImDeepLinkButton();
             latestFullPlanContext = {
