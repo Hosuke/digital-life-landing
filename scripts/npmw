@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+NVMRC_FILE="${ROOT_DIR}/.nvmrc"
+
+if [[ -f "${NVMRC_FILE}" ]]; then
+  REQUIRED_NODE_VERSION="$(tr -d '[:space:]' < "${NVMRC_FILE}")"
+  NVM_NPM="${HOME}/.nvm/versions/node/v${REQUIRED_NODE_VERSION}/bin/npm"
+  if [[ -x "${NVM_NPM}" ]]; then
+    exec "${NVM_NPM}" "$@"
+  fi
+fi
+
+if command -v npm >/dev/null 2>&1; then
+  if npm -v >/dev/null 2>&1; then
+    exec npm "$@"
+  fi
+fi
+
+echo "npm is not available. Install Node $(cat "${NVMRC_FILE}" 2>/dev/null || echo "LTS") or run: nvm install" >&2
+exit 1

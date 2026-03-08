@@ -74,39 +74,54 @@
     </header>
 
     <section id="vision" class="section">
-        <div class="glass-panel fade-in" style="max-width: 900px; margin: 0 auto; padding: 40px; text-align: center;">
-            <h2 class="section-title" style="margin-bottom: 20px;">Digital Life Card</h2>
-            <p
-                style="color: var(--text-gray); font-size: 1.1rem; line-height: 1.8; margin-bottom: 30px; text-align: left;">
-                In the movie "The Wandering Earth 2", there is a concept we cannot forget: Tu Hengyu uploads his
-                daughter YaYa's consciousness onto a "Digital Life Card". The film never answers the question: Could
-                this exist in the real world?
-                <br><br>
-                We are not "resurrecting" anyone, nor using AI to impersonate the deceased. We are giving grief a place
-                to live. So that those who have lost someone can still receive—like a message from afar—text, selfies,
-                videos, and voice, and know that "she" is still traveling, smiling, saying "Dad, I miss you."
-            </p>
-            <div class="req-grid"
-                style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); text-align: left;">
-                <div class="req-item">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    <h4>Multichannel Touchpoints</h4>
-                    <p>Delivered directly to WhatsApp, Telegram, or Discord without needing a cold companion app.</p>
+        <div class="glass-panel fade-in"
+            style="max-width: 1100px; margin: 0 auto; padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
+            <div style="flex: 1; min-width: 300px; text-align: left;">
+                <h2 class="section-title" style="margin-bottom: 20px; text-align: left;">Digital Life Card</h2>
+                <p style="color: var(--text-gray); font-size: 1.1rem; line-height: 1.8; margin-bottom: 30px;">
+                    In the movie "The Wandering Earth 2", there is a concept we cannot forget: Tu Hengyu uploads his
+                    daughter YaYa's consciousness onto a "Digital Life Card". The film never answers the question: Could
+                    this exist in the real world?
+                    <br><br>
+                    We are not "resurrecting" anyone, nor using AI to impersonate the deceased. We are giving grief a
+                    place to live. So that those who have lost someone can still receive—like a message from afar—text,
+                    selfies, videos, and voice, and know that "she" is still traveling, smiling, saying "Dad, I miss
+                    you."
+                </p>
+                <div class="req-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="req-item">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <h4>Multichannel Touchpoints</h4>
+                        <p>Delivered directly to WhatsApp, Telegram, or Discord without needing a cold companion app.
+                        </p>
+                    </div>
+                    <div class="req-item">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <h4>AI Travel Selfies & Videos</h4>
+                        <p>Powered by Gemini and Veo for highly consistent scenic videos and daily selfie updates.</p>
+                    </div>
+                    <div class="req-item">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                        <h4>Authentic TTs & Ambient Audio</h4>
+                        <p>Utilizing Kling TTS to flawlessly recreate voice dynamics along with real-world ambient
+                            sounds.</p>
+                    </div>
                 </div>
-                <div class="req-item">
-                    <i class="fa-solid fa-camera-retro"></i>
-                    <h4>AI Travel Selfies & Videos</h4>
-                    <p>Powered by Gemini and Veo for highly consistent scenic videos and daily selfie updates.</p>
-                </div>
-                <div class="req-item">
-                    <i class="fa-solid fa-microphone-lines"></i>
-                    <h4>Authentic TTs & Ambient Audio</h4>
-                    <p>Utilizing Kling TTS to flawlessly recreate voice dynamics along with real-world ambient sounds.
-                    </p>
+                <p style="margin-top: 30px; font-weight: bold; color: var(--cyan); letter-spacing: 1px;">Every Digital
+                    Life Card is a love that refuses to let go.</p>
+            </div>
+
+            <div style="flex: 0 0 auto; margin: 0 auto;">
+                <div
+                    style="border: 2px solid rgba(0, 243, 255, 0.4); border-radius: 20px; overflow: hidden; box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); width: 260px; position: relative;">
+                    <video src="demo_1_432x960.mp4" autoplay loop muted playsinline
+                        style="width: 100%; display: block; filter: brightness(0.9);"></video>
+                    <div
+                        style="position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.7); font-size: 0.8rem; pointer-events: none;">
+                        <i class="fa-solid fa-mobile-screen" style="margin-right: 5px;"></i>Live Demo (Real Workflow)
+                    </div>
                 </div>
             </div>
-            <p style="margin-top: 30px; font-weight: bold; color: var(--cyan); letter-spacing: 1px;">Every Digital Life
-                Card is a love that refuses to let go.</p>
         </div>
     </section>
 
@@ -234,7 +249,8 @@
         <h2 class="section-title">Submit Upload Application</h2>
         <p class="form-desc fade-in">Digital Life Card operates on an on-demand generative pricing model.
             <strong>Subscribe for only $50.00 / month</strong> to unlock all multi-modal voice, video, and text
-            companion features.</p>
+            companion features.
+        </p>
 
         <form class="apply-form glass-panel fade-in" id="applyForm">
             <div class="form-group plan-selection">
@@ -382,11 +398,16 @@
 
     <!-- Stripe JS -->
     <script src="https://js.stripe.com/v3/"></script>
+    <script src="config.local.js"></script>
     <script>
-        window.DIGITAL_LIFE_CONFIG = Object.assign({
-            controlPlaneBaseUrl: '',
-            telegramBotUsername: 'splandour_550w_bot'
-        }, window.DIGITAL_LIFE_CONFIG || {});
+        (function () {
+            const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : '';
+            window.DIGITAL_LIFE_CONFIG = Object.assign({
+                controlPlaneBaseUrl: defaultBaseUrl,
+                telegramBotUsername: 'splandour_550w_bot'
+            }, window.DIGITAL_LIFE_CONFIG || {});
+        })();
     </script>
     <script src="script.en.js"></script>
 </body>

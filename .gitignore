@@ -7,6 +7,7 @@ control-plane/npm-debug.log*
 # Environment variables (NEVER COMMIT THIS)
 bot/.env
 control-plane/.env
+config.local.js
 
 # MacOS system files
 .DS_Store
