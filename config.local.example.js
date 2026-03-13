@@ -1,7 +1,8 @@
 window.DIGITAL_LIFE_CONFIG = Object.assign(
   {
     controlPlaneBaseUrl: 'http://localhost:8787',
-    telegramBotUsername: 'splandour_550w_bot'
+    telegramBotUsername: 'splandour_550w_bot',
+    publishTarget: 'modelscope'
   },
   window.DIGITAL_LIFE_CONFIG || {}
 );
