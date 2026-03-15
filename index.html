@@ -268,6 +268,22 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="qqNumber">体验绑定 QQ 号（用于 UID 对应）</label>
+                <input type="text" id="qqNumber" required placeholder="请输入您将用于私聊机器人的 QQ 号">
+            </div>
+
+            <div class="form-group">
+                <label for="role">角色设定（Role）</label>
+                <input type="text" id="role" required placeholder="例如：18岁女儿 / 温柔旅行搭子">
+            </div>
+
+            <div class="form-group">
+                <label for="soul">灵魂设定（Soul）</label>
+                <textarea id="soul" rows="3" required
+                    placeholder="例如：乐观、会安慰人、爱拍照、会在傍晚主动问候"></textarea>
+            </div>
+
             <div class="form-group full-plan-only" id="dataCheckgroup" style="display: none;">
                 <label>数据准备进度申明 (需承诺按时提供)</label>
                 <div class="checkbox-group">
@@ -352,6 +368,7 @@
                     style="width: 100%; justify-content: center; font-size: 1rem;"><i class="fa-brands fa-stripe"
                         style="font-size: 1.5rem; margin-right: 5px;"></i> 安全支付 $50.00</button>
             </div>
+            <div id="activationGuideContainer" style="display: none; margin-top: 16px;"></div>
 
             <button class="nav-btn" onclick="closeModal()"
                 style="display:block; margin: 15px auto 0; background:transparent; border:none; color:rgba(255,255,255,0.4)!important; text-decoration:underline; cursor:pointer;">我再想想
@@ -365,10 +382,13 @@
     <script>
         (function () {
             const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
-            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : '';
+            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://qqbot.qungan.com';
             window.DIGITAL_LIFE_CONFIG = Object.assign({
                 controlPlaneBaseUrl: defaultBaseUrl,
-                telegramBotUsername: 'splandour_550w_bot'
+                telegramBotUsername: 'splandour_550w_bot',
+                preferredChannel: 'qq',
+                qqBotName: 'QQClaw',
+                qqBotUin: ''
             }, window.DIGITAL_LIFE_CONFIG || {});
         })();
     </script>

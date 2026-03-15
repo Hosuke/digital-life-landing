@@ -297,6 +297,22 @@
                 </select>
             </div>
 
+            <div class="form-group">
+                <label for="qqNumber">QQ Number (UID binding)</label>
+                <input type="text" id="qqNumber" required placeholder="Enter the QQ account you will chat with">
+            </div>
+
+            <div class="form-group">
+                <label for="role">Persona Role</label>
+                <input type="text" id="role" required placeholder="e.g. 18-year-old daughter / warm travel companion">
+            </div>
+
+            <div class="form-group">
+                <label for="soul">Persona Soul</label>
+                <textarea id="soul" rows="3" required
+                    placeholder="e.g. optimistic, comforting, loves photography, checks in every evening"></textarea>
+            </div>
+
             <div class="form-group full-plan-only" id="dataCheckgroup" style="display: none;">
                 <label>Data Preparation Declaration (Commit to Provide on Time)</label>
                 <div class="checkbox-group">
@@ -390,6 +406,7 @@
                     style="width: 100%; justify-content: center; font-size: 1rem;"><i class="fa-brands fa-stripe"
                         style="font-size: 1.5rem; margin-right: 5px;"></i> Secure Pay $50.00</button>
             </div>
+            <div id="activationGuideContainer" style="display: none; margin-top: 16px;"></div>
 
             <button class="nav-btn" onclick="closeModal()"
                 style="display:block; margin: 15px auto 0; background:transparent; border:none; color:rgba(255,255,255,0.4)!important; text-decoration:underline; cursor:pointer;">Think
@@ -403,10 +420,13 @@
     <script>
         (function () {
             const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
-            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : '';
+            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://qqbot.qungan.com';
             window.DIGITAL_LIFE_CONFIG = Object.assign({
                 controlPlaneBaseUrl: defaultBaseUrl,
-                telegramBotUsername: 'splandour_550w_bot'
+                telegramBotUsername: 'splandour_550w_bot',
+                preferredChannel: 'qq',
+                qqBotName: 'QQClaw',
+                qqBotUin: ''
             }, window.DIGITAL_LIFE_CONFIG || {});
         })();
     </script>

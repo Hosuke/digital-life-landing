@@ -32,6 +32,7 @@ flowchart LR
 This repository features a highly polished, cyber-themed static frontend designed for commercial conversion:
 - **I18n Native**: Seamless bilingual support (English `index.en.html` & Chinese `index.html`).
 - **Live Demo Embedded**: Vertical mobile UI demonstration seamlessly integrated into the vision section.
+- **QQ-first Trial Onboarding**: Trial apply form collects `QQ号 + role + soul`, then shows `UID /handoff` command and activation steps.
 - **Stripe Checkout Built-in**: Beautifully styled application forms with $50/month subscription integration (using Stripe Elements).
 - **Responsive & Glitch UI**: Custom-built CSS animations, neon futuristic aesthetics, and terminal-inspired components.
 

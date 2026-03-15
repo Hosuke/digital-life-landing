@@ -192,14 +192,140 @@ let currentPlan = 'trial';
 const PAGE_CONFIG = window.DIGITAL_LIFE_CONFIG || {};
 const CONTROL_PLANE_BASE_URL = String(PAGE_CONFIG.controlPlaneBaseUrl || '').trim().replace(/\/+$/, '');
 const TELEGRAM_BOT_USERNAME = String(PAGE_CONFIG.telegramBotUsername || 'splandour_550w_bot').trim();
+const PREFERRED_CHANNEL = String(PAGE_CONFIG.preferredChannel || 'qq').trim().toLowerCase() || 'qq';
+const QQ_BOT_NAME = String(PAGE_CONFIG.qqBotName || 'QQClaw').trim();
+const QQ_BOT_UIN = String(PAGE_CONFIG.qqBotUin || '').trim();
+const activationGuideContainer = document.getElementById('activationGuideContainer');
 
 function generateFallbackUid() {
-    const rand = Math.floor(100000 + Math.random() * 900000);
-    return `UID-550W-${rand}`;
+    const date = new Date();
+    const y = String(date.getUTCFullYear());
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    const suffix = Math.random().toString(16).slice(2, 8).toUpperCase();
+    return `UID-AMBER-${y}${m}${d}-${suffix}`;
 }
 
 function defaultDeepLink(uid) {
     return `https://t.me/${TELEGRAM_BOT_USERNAME}?start=${uid}`;
+}
+
+function htmlSafe(text) {
+    return String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function defaultActivation(uid, qqNumber = '') {
+    const handoffCommand = `${uid} /handoff`;
+    const qqHint = qqNumber
+        ? `Please use QQ account ${qqNumber} to chat with ${QQ_BOT_NAME || 'QQClaw'}`
+        : `Search QQ bot ${QQ_BOT_NAME || 'QQClaw'} first`;
+    return {
+        channel: PREFERRED_CHANNEL,
+        handoffCommand,
+        entryUrl: '',
+        qq: {
+            botName: QQ_BOT_NAME || 'QQClaw',
+            botUin: QQ_BOT_UIN || null,
+            qqNumber: qqNumber || null
+        },
+        steps: [
+            qqHint,
+            `Send command: ${handoffCommand}`,
+            'Then send 1 front photo and one 10-second voice clip'
+        ]
+    };
+}
+
+function resolveActivation(applyResult, uid, qqNumber = '') {
+    const serverActivation = applyResult && applyResult.activation && typeof applyResult.activation === 'object'
+        ? applyResult.activation
+        : null;
+    if (serverActivation) {
+        return {
+            ...defaultActivation(uid, qqNumber),
+            ...serverActivation,
+            qq: {
+                ...(defaultActivation(uid, qqNumber).qq || {}),
+                ...((serverActivation && serverActivation.qq) || {})
+            }
+        };
+    }
+    if (applyResult && applyResult.telegramDeepLink) {
+        return {
+            channel: 'telegram',
+            handoffCommand: `${uid} /handoff`,
+            entryUrl: applyResult.telegramDeepLink,
+            steps: [
+                'Open Telegram and enter bot chat',
+                `Send command: ${uid} /handoff`,
+                'Send 1 front photo and one 10-second voice clip'
+            ]
+        };
+    }
+    return defaultActivation(uid, qqNumber);
+}
+
+function hideActivationGuide() {
+    if (!activationGuideContainer) return;
+    activationGuideContainer.style.display = 'none';
+    activationGuideContainer.innerHTML = '';
+}
+
+function renderActivationGuide(activationInput, uid) {
+    if (!activationGuideContainer) return;
+    const activation = activationInput && typeof activationInput === 'object'
+        ? activationInput
+        : defaultActivation(uid);
+    const channel = String(activation.channel || '').toLowerCase();
+    const channelLabel = channel === 'telegram' ? 'Telegram' : (channel === 'feishu' ? 'Feishu' : 'QQ');
+    const command = String(activation.handoffCommand || `${uid} /handoff`);
+    const steps = Array.isArray(activation.steps) && activation.steps.length
+        ? activation.steps
+        : [`Open ${channelLabel} bot chat`, `Send command: ${command}`, 'Send 1 front photo and one 10-second voice clip'];
+    const link = String(activation.entryUrl || activation?.qq?.addFriendUrl || '').trim();
+
+    const stepsHtml = steps.map((item) => `<li style="margin-bottom:6px;">${htmlSafe(item)}</li>`).join('');
+    const openLinkHtml = link
+        ? `<a class="cta-btn m-top" href="${htmlSafe(link)}" target="_blank" rel="noopener" style="display:flex; width:100%; justify-content:center; font-size:0.95rem;">Open ${channelLabel} Entry</a>`
+        : '';
+    const qqNumber = activation?.qq?.qqNumber ? `<div style="margin-top:8px; opacity:0.8;">Bound QQ: ${htmlSafe(activation.qq.qqNumber)}</div>` : '';
+    const qqBotHint = activation?.qq?.botUin ? `<div style="margin-top:6px; opacity:0.75;">Bot ID: ${htmlSafe(activation.qq.botUin)}</div>` : '';
+
+    activationGuideContainer.innerHTML = `
+        <div style="padding:12px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.25); text-align:left; font-size:0.92rem;">
+            <div style="margin-bottom:10px;"><strong>${channelLabel} Activation Guide</strong></div>
+            <div style="margin-bottom:8px; opacity:0.9;">UID: ${htmlSafe(uid)}</div>
+            ${qqNumber}
+            ${qqBotHint}
+            <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+                <code id="handoffCommandText" style="flex:1; display:block; padding:8px; border-radius:6px; background:#111; border:1px solid #2a2a2a; color:var(--cyan); word-break:break-all;">${htmlSafe(command)}</code>
+                <button id="copyHandoffBtn" class="cta-btn" style="white-space:nowrap; font-size:0.9rem; padding:8px 12px;">Copy</button>
+            </div>
+            <ol style="margin:12px 0 0 20px; padding:0;">${stepsHtml}</ol>
+            ${openLinkHtml}
+        </div>
+    `;
+    activationGuideContainer.style.display = 'block';
+
+    const copyBtn = document.getElementById('copyHandoffBtn');
+    if (copyBtn) {
+        copyBtn.onclick = async () => {
+            try {
+                await navigator.clipboard.writeText(command);
+                copyBtn.textContent = 'Copied';
+            } catch {
+                copyBtn.textContent = 'Failed';
+            }
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy';
+            }, 1200);
+        };
+    }
 }
 
 async function submitApplyOrder() {
@@ -208,6 +334,10 @@ async function submitApplyOrder() {
         applicant: document.getElementById('applicant').value.trim(),
         subject: document.getElementById('subject').value.trim(),
         relation: document.getElementById('relation').value.trim(),
+        role: document.getElementById('role').value.trim(),
+        soul: document.getElementById('soul').value.trim(),
+        qqNumber: document.getElementById('qqNumber').value.trim(),
+        channelPreference: PREFERRED_CHANNEL,
         message: document.getElementById('message').value.trim(),
         source: 'landing'
     };
@@ -217,6 +347,7 @@ async function submitApplyOrder() {
         return {
             uid,
             telegramDeepLink: defaultDeepLink(uid),
+            activation: defaultActivation(uid, payload.qqNumber),
             fallback: true
         };
     }
@@ -235,6 +366,7 @@ async function submitApplyOrder() {
     return {
         uid: data.uid,
         telegramDeepLink: data.telegramDeepLink || defaultDeepLink(data.uid),
+        activation: data.activation || null,
         statusUrl: data.statusUrl || '',
         paymentStatus: data.paymentStatus || '',
         fallback: false
@@ -258,27 +390,6 @@ function paymentStatusText(status) {
         unknown: 'Unknown'
     };
     return map[normalizePaymentStatus(status)] || status;
-}
-
-function upsertImDeepLinkButton(href, labelText) {
-    let imBtn = document.getElementById('imDeepLinkBtn');
-    if (!imBtn) {
-        imBtn = document.createElement('a');
-        imBtn.id = 'imDeepLinkBtn';
-        imBtn.className = 'cta-btn m-top';
-        imBtn.style.display = 'flex';
-        imBtn.style.width = '100%';
-        imBtn.style.justifyContent = 'center';
-        imBtn.style.fontSize = '1.1rem';
-        stripePaymentForm.parentNode.insertBefore(imBtn, stripePaymentForm.nextSibling);
-    }
-    imBtn.innerHTML = '<i class="fa-brands fa-telegram" style="font-size: 1.5rem; margin-right: 10px;"></i> ' + labelText;
-    imBtn.href = href;
-}
-
-function removeImDeepLinkButton() {
-    const existingImBtn = document.getElementById('imDeepLinkBtn');
-    if (existingImBtn) existingImBtn.remove();
 }
 
 function ensureFullPlanStatusPanel() {
@@ -329,9 +440,9 @@ async function refreshFullPlanPaymentState() {
         panel.querySelector('#refreshPaymentBtn').onclick = refreshFullPlanPaymentState;
 
         if (canEnterIm) {
-            upsertImDeepLinkButton(latestFullPlanContext.telegramDeepLink, 'Connect Telegram Awakening Terminal');
+            renderActivationGuide(latestFullPlanContext.activation, latestFullPlanContext.uid);
         } else {
-            removeImDeepLinkButton();
+            hideActivationGuide();
         }
     } catch (err) {
         panel.innerHTML = `
@@ -393,12 +504,13 @@ applyForm.addEventListener('submit', async (e) => {
             modalTitle.textContent = 'Compute scheduling request established';
             modalDesc.innerHTML = 'Please complete the first month payment to officially activate your Digital Life Card.<br>The system will allocate an exclusive 550W cycle for your multi-modal generative needs and messaging integrations.<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> Payment protected by enterprise-grade Stripe encryption</small>';
             stripePaymentForm.style.display = 'block';
-            removeImDeepLinkButton();
+            hideActivationGuide();
             latestFullPlanContext = {
                 uid,
                 statusUrl: applyResult.statusUrl || '',
                 paymentStatus: normalizePaymentStatus(applyResult.paymentStatus || 'unknown'),
-                telegramDeepLink: applyResult.telegramDeepLink || defaultDeepLink(uid)
+                telegramDeepLink: applyResult.telegramDeepLink || defaultDeepLink(uid),
+                activation: resolveActivation(applyResult, uid, document.getElementById('qqNumber').value.trim())
             };
             const panel = ensureFullPlanStatusPanel();
             panel.innerHTML = `
@@ -412,7 +524,7 @@ applyForm.addEventListener('submit', async (e) => {
             }
             const canEnterImDirectly = latestFullPlanContext.paymentStatus === 'paid' || latestFullPlanContext.paymentStatus === 'waived';
             if (canEnterImDirectly) {
-                upsertImDeepLinkButton(latestFullPlanContext.telegramDeepLink, 'Connect Telegram Awakening Terminal');
+                renderActivationGuide(latestFullPlanContext.activation, uid);
             }
 
         } else {
@@ -425,10 +537,7 @@ applyForm.addEventListener('submit', async (e) => {
             stripePaymentForm.style.display = 'none';
             removeFullPlanStatusPanel();
             latestFullPlanContext = null;
-
-            // Generate IM Deep Link Button (e.g., Telegram)
-            const deepLinkUrl = applyResult.telegramDeepLink || defaultDeepLink(uid);
-            upsertImDeepLinkButton(deepLinkUrl, 'Connect Telegram Awakening Terminal');
+            renderActivationGuide(resolveActivation(applyResult, uid, document.getElementById('qqNumber').value.trim()), uid);
 
             if (applyResult.fallback) {
                 modalDesc.innerHTML += '<br><small style="color:#ffad33;"><i class="fa-solid fa-triangle-exclamation"></i> Backend unavailable, using local demo UID.</small>';
@@ -464,5 +573,6 @@ applyForm.addEventListener('submit', async (e) => {
 window.closeModal = () => {
     modal.classList.remove('active');
     removeFullPlanStatusPanel();
+    hideActivationGuide();
     latestFullPlanContext = null;
 };
