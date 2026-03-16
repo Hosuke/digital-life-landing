@@ -471,7 +471,7 @@ planRadios.forEach(radio => {
             dataCheckgroup.style.display = 'none';
             checkoutSummary.style.display = 'none';
             trialCheckgroup.style.display = 'block';
-            getSubmitBtnText().textContent = 'Submit Basic Data & Start Experience';
+            getSubmitBtnText().textContent = 'Submit basic data and start the trial';
 
             checkPhoto.required = false;
             checkVideo.required = false;
@@ -488,7 +488,7 @@ applyForm.addEventListener('submit', async (e) => {
 
     // Animate button
     const originalText = getSubmitBtnText().textContent;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to quantum computer...';
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting to the quantum computer...';
     submitBtn.style.opacity = '0.8';
     submitBtn.disabled = true;
 
@@ -501,8 +501,8 @@ applyForm.addEventListener('submit', async (e) => {
         seqNumber.setAttribute('data-text', uid); // For glitch effect
 
         if (currentPlan === 'full') {
-            modalTitle.textContent = 'Compute scheduling request established';
-            modalDesc.innerHTML = 'Please complete the first month payment to officially activate your Digital Life Card.<br>The system will allocate an exclusive 550W cycle for your multi-modal generative needs and messaging integrations.<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> Payment protected by enterprise-grade Stripe encryption</small>';
+            modalTitle.textContent = 'Compute scheduling request created';
+            modalDesc.innerHTML = 'Please complete the first-month deposit to officially activate your Digital Life Card.<br>The system will allocate a dedicated 550W compute channel for multimodal generation and messaging integration.<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> Payments are protected by enterprise-grade Stripe encryption</small>';
             stripePaymentForm.style.display = 'block';
             hideActivationGuide();
             latestFullPlanContext = {
@@ -528,8 +528,8 @@ applyForm.addEventListener('submit', async (e) => {
             }
 
         } else {
-            modalTitle.textContent = 'Experience life mount initialized';
-            modalDesc.innerHTML = `New life construction starts by confirming your UID. Your trial archive is mounted to virtual space.<br><br>
+            modalTitle.textContent = 'Trial life foundation initialized';
+            modalDesc.innerHTML = `New life construction begins by confirming your dedicated UID. Your trial profile has been mounted into virtual space.<br><br>
                 <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; border-left: 3px solid var(--cyan); margin-top: 15px; font-size: 0.9rem;">
                     <strong>[System Prompt]</strong> Intercepted 550W init request. Verify your identity immediately via the dedicated comm link.<br>
                     Click below to enter the encrypted terminal and send your visual and audio features.
