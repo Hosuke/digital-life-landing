@@ -1,14 +1,14 @@
-# 珀存 Pocun · Digital Life Landing Page
+# Amberify（中文名：珀存）· Digital Life Landing Page
 
 *"未来的某日 inclusion 终将重逢。在那之前，让数字生命在平行宇宙中社会化地活着。"*
 *"Until inclusion reunites us, let digital lives socialize and thrive in their parallel universe."*
 
-珀存（Pocun，formerly Digital Life Project）is the official open-source frontend landing page for the Digital Life Card system. It serves as the primary touchpoint for users to learn about our vision, request 550W computational cycles, and initiate their digital life upload process.
+Amberify（中文名：珀存，formerly Digital Life Project）is the official open-source frontend landing page for the Digital Life Card system. It serves as the primary touchpoint for users to learn about our vision, request 550W computational cycles, and initiate their digital life upload process.
 
 ## 🌟 Core Vision
 In *The Wandering Earth 2*, Tu Hengyu uploads his daughter YaYa's consciousness onto a "Digital Life Card". The film never answers the question: Could this exist in the real world?
 
-珀存 is our answer. We are not "resurrecting" anyone, nor using AI to impersonate the deceased. We are **giving grief a place to live**. By leveraging multimodal generative intelligence (Gemini, Veo, Kling TTS), we enable users to receive text, selfie photos, scenic travel videos, and voice messages with realistic ambient sound from their digital loved ones directly via daily messaging apps.
+Amberify is our answer. We are not "resurrecting" anyone, nor using AI to impersonate the deceased. We are **giving grief a place to live**. By leveraging multimodal generative intelligence (Gemini, Veo, Kling TTS), we enable users to receive text, selfie photos, scenic travel videos, and voice messages with realistic ambient sound from their digital loved ones directly via daily messaging apps.
 
 ## 🗺️ System Architecture
 ```mermaid
@@ -61,4 +61,4 @@ This repository acts solely as the **showcase and customer entry portal (Landing
 To connect this frontend to your own orchestration backend, configure the `controlPlaneBaseUrl` in `config.local.js` during development or modify `window.DIGITAL_LIFE_CONFIG` before final deployment.
 
 ## ©️ License
-© 2058 珀存. All rights reserved.
+© 2058 Amberify（珀存）. All rights reserved.

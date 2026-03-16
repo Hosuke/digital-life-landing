@@ -193,7 +193,7 @@ const PAGE_CONFIG = window.DIGITAL_LIFE_CONFIG || {};
 const CONTROL_PLANE_BASE_URL = String(PAGE_CONFIG.controlPlaneBaseUrl || '').trim().replace(/\/+$/, '');
 const TELEGRAM_BOT_USERNAME = String(PAGE_CONFIG.telegramBotUsername || 'splandour_550w_bot').trim();
 const PREFERRED_CHANNEL = String(PAGE_CONFIG.preferredChannel || 'qq').trim().toLowerCase() || 'qq';
-const QQ_BOT_NAME = String(PAGE_CONFIG.qqBotName || 'PocunQQBot').trim();
+const QQ_BOT_NAME = String(PAGE_CONFIG.qqBotName || 'AmberifyQQBot').trim();
 const QQ_BOT_UIN = String(PAGE_CONFIG.qqBotUin || '').trim();
 const MANUAL_CONTACT_WECHAT = String(PAGE_CONFIG.manualSchedulingWechat || 'q517754526').trim();
 const MANUAL_CONTACT_QQ = String(PAGE_CONFIG.manualSchedulingQq || '517754526').trim();
@@ -224,15 +224,15 @@ function htmlSafe(text) {
 function defaultActivation(uid, qqNumber = '') {
     const handoffCommand = `${uid} /handoff`;
     const qqHint = qqNumber
-        ? `Please use QQ account ${qqNumber} to chat with ${QQ_BOT_NAME || 'PocunQQBot'}`
-        : `Search QQ bot ${QQ_BOT_NAME || 'PocunQQBot'} first`;
+        ? `Please use QQ account ${qqNumber} to chat with ${QQ_BOT_NAME || 'AmberifyQQBot'}`
+        : `Search QQ bot ${QQ_BOT_NAME || 'AmberifyQQBot'} first`;
     return {
         channel: PREFERRED_CHANNEL,
         handoffCommand,
         autoHandoff: true,
         entryUrl: '',
         qq: {
-            botName: QQ_BOT_NAME || 'PocunQQBot',
+            botName: QQ_BOT_NAME || 'AmberifyQQBot',
             botUin: QQ_BOT_UIN || null,
             qqNumber: qqNumber || null
         },
