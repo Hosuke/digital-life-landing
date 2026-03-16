@@ -493,7 +493,7 @@ planRadios.forEach(radio => {
             dataCheckgroup.style.display = 'block';
             checkoutSummary.style.display = 'block';
             trialCheckgroup.style.display = 'none';
-            getSubmitBtnText().textContent = '支付定金并生成排期密匙';
+            getSubmitBtnText().textContent = '支付定金并开始唤醒';
 
             checkPhoto.required = true;
             checkVideo.required = true;
@@ -503,7 +503,7 @@ planRadios.forEach(radio => {
             dataCheckgroup.style.display = 'none';
             checkoutSummary.style.display = 'none';
             trialCheckgroup.style.display = 'block';
-            getSubmitBtnText().textContent = '提交基础数据并开启体验';
+            getSubmitBtnText().textContent = '提交并开始找回 TA';
 
             checkPhoto.required = false;
             checkVideo.required = false;
@@ -520,7 +520,7 @@ applyForm.addEventListener('submit', async (e) => {
 
     // Animate button
     const originalText = getSubmitBtnText().textContent;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在连接量子计算机...';
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在为 TA 创建空间...';
     submitBtn.style.opacity = '0.8';
     submitBtn.disabled = true;
 
@@ -533,8 +533,8 @@ applyForm.addEventListener('submit', async (e) => {
         seqNumber.setAttribute('data-text', uid); // For glitch effect
 
         if (currentPlan === 'full') {
-            modalTitle.textContent = '算力排期请求已建立';
-            modalDesc.innerHTML = '请完成首月定金支付以正式激活您的数字生命卡。<br>系统将为您分配专属 550W 算力信道用于全模态模型生成与通讯应用集成。<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级网络安全加密保障</small>';
+            modalTitle.textContent = '唤醒请求已建立';
+            modalDesc.innerHTML = '请完成首月定金支付，我们就开始为 TA 建造新的家。<br>550W 算力将专属于 TA 的唤醒进程。<br><br><small style="color: rgba(255,255,255,0.5);"><i class="fa-solid fa-lock"></i> 支付由 Stripe 提供企业级安全加密保障</small>';
             stripePaymentForm.style.display = 'block';
             hideActivationGuide();
             latestFullPlanContext = {
@@ -560,11 +560,11 @@ applyForm.addEventListener('submit', async (e) => {
             }
 
         } else {
-            modalTitle.textContent = '体验生命基座已初始化';
-            modalDesc.innerHTML = `建档已经开始。接下来 QQ 里的引导员会先认真确认：TA 是谁、TA 的说话方式、你们最想留下的记忆，然后再收照片与语音。<br><br>
+            modalTitle.textContent = 'TA 的空间已创建';
+            modalDesc.innerHTML = `建档已经开始。接下来 QQ 里的引导员会陪你一起确认：TA 是谁、TA 怎么说话、你们最想留下的记忆，然后再收照片与语音。<br><br>
                 <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; border-left: 3px solid var(--cyan); margin-top: 15px; font-size: 0.9rem;">
-                    <strong>[建档提示]</strong> 不用按格式填写，也不用重复解释。<br>
-                    你像平时聊天一样告诉 TA 的样子就可以，系统会自动整理成体验版数字生命底稿。
+                    <strong>[温馨提示]</strong> 不用按格式填写，也不用重复解释。<br>
+                    像平时聊天一样告诉我们 TA 的样子就好，系统会自动整理成 TA 的数字生命底稿。
                 </div>`;
             stripePaymentForm.style.display = 'none';
             removeFullPlanStatusPanel();

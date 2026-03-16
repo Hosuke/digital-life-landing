@@ -22,7 +22,7 @@ body {
     color: var(--white);
     font-family: 'Noto Sans SC', sans-serif;
     overflow-x: hidden;
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
 h1,
@@ -135,10 +135,12 @@ h4,
 }
 
 .subtitle {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     color: var(--text-gray);
     margin-bottom: 40px;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
+    line-height: 2;
+    max-width: 680px;
 }
 
 .quote-box {
@@ -367,19 +369,21 @@ h4,
 }
 
 .alert-box {
-    background: var(--warn-bg);
-    border-left: 4px solid var(--warn-red);
-    padding: 15px 20px;
+    background: rgba(0, 243, 255, 0.05);
+    border-left: 4px solid var(--cyan);
+    padding: 18px 22px;
     margin-bottom: 30px;
     display: flex;
     align-items: center;
     gap: 15px;
-    color: #ffb3b3;
+    color: var(--text-gray);
+    border-radius: 4px;
 }
 
 .alert-box i {
-    color: var(--warn-red);
+    color: var(--cyan);
     font-size: 1.5rem;
+    flex-shrink: 0;
 }
 
 .req-grid {
