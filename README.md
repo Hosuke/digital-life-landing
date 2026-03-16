@@ -32,7 +32,7 @@ flowchart LR
 This repository features a highly polished, cyber-themed static frontend designed for commercial conversion:
 - **I18n Native**: Seamless bilingual support (English `index.en.html` & Chinese `index.html`).
 - **Live Demo Embedded**: Vertical mobile UI demonstration seamlessly integrated into the vision section.
-- **QQ-first Trial Onboarding**: Trial apply form collects `QQ号 + 角色描述 + 说话风格`, then shows QQ activation steps and asset upload guidance.
+- **QQ-first Interview Intake**: Trial apply form collects natural-language profile clues (`QQ号 + TA是谁 + TA怎么说话 + 一段记忆/心愿`), then hands users into a QQ intake guide that continues the interview before asking for photo and voice samples.
 - **Manual Fulfillment After Payment**: Payment result screen asks users to add WeChat `q517754526` (QQ `517754526`) for manual scheduling and activation.
 - **Responsive & Glitch UI**: Custom-built CSS animations, neon futuristic aesthetics, and terminal-inspired components.
 

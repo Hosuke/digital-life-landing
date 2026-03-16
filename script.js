@@ -238,8 +238,8 @@ function defaultActivation(uid, qqNumber = '') {
         },
         steps: [
             qqHint,
-            '先告诉我 TA 是谁、TA 怎么和你说话',
-            '再发送 1 张正面照和一段 10 秒语音（系统会自动启动）'
+            '先自然聊几句：TA 是谁、TA 会怎么和你说话、你们最想留下哪段记忆',
+            '随后机器人会继续问你要 1 张正面照和 10 秒语音，资料妥当后自动启动'
         ],
         manualFulfillment: {
             mode: 'manual_scheduling',
@@ -300,7 +300,7 @@ function renderActivationGuide(activationInput, uid) {
     const steps = Array.isArray(activation.steps) && activation.steps.length
         ? activation.steps
         : autoHandoff
-            ? [`打开 ${channelLabel} 机器人会话`, '告诉我 TA 是谁与说话风格', '发送 1 张正面照和一段 10 秒语音，系统自动启动']
+            ? [`打开 ${channelLabel} 机器人会话`, '先自然聊几句 TA 是谁、怎么说话、你们的记忆', '再发 1 张正面照和 10 秒语音，系统自动启动']
             : [`打开 ${channelLabel} 机器人会话`, `发送口令：${command}`, '发送 1 张正面照和一段 10 秒语音'];
     const link = String(activation.entryUrl || activation?.qq?.addFriendUrl || '').trim();
     const manual = activation && activation.manualFulfillment && typeof activation.manualFulfillment === 'object'
@@ -354,13 +354,20 @@ function renderActivationGuide(activationInput, uid) {
 }
 
 async function submitApplyOrder() {
+    const taIdentity = document.getElementById('role').value.trim();
+    const howToTalk = document.getElementById('soul').value.trim();
     const payload = {
         planType: currentPlan,
         applicant: document.getElementById('applicant').value.trim(),
         subject: document.getElementById('subject').value.trim(),
         relation: document.getElementById('relation').value.trim(),
-        role: document.getElementById('role').value.trim(),
-        soul: document.getElementById('soul').value.trim(),
+        role: taIdentity,
+        soul: howToTalk,
+        taIdentity,
+        howToTalk,
+        sharedMemory: document.getElementById('sharedMemory').value.trim(),
+        currentWish: document.getElementById('currentWish').value.trim(),
+        preferredCall: document.getElementById('preferredCall').value.trim(),
         qqNumber: document.getElementById('qqNumber').value.trim(),
         channelPreference: PREFERRED_CHANNEL,
         message: document.getElementById('message').value.trim(),
@@ -554,10 +561,10 @@ applyForm.addEventListener('submit', async (e) => {
 
         } else {
             modalTitle.textContent = '体验生命基座已初始化';
-            modalDesc.innerHTML = `新生命构建从确认专属 UID 开始。您的体验档案已挂载至虚拟空间。<br><br>
+            modalDesc.innerHTML = `建档已经开始。接下来 QQ 里的引导员会先认真确认：TA 是谁、TA 的说话方式、你们最想留下的记忆，然后再收照片与语音。<br><br>
                 <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; border-left: 3px solid var(--cyan); margin-top: 15px; font-size: 0.9rem;">
-                    <strong>[系统提示]</strong> 拦截到 550W 初始化请求。请即刻通过专属通讯链路验证您的身份。<br>
-                    点击下方按钮进入加密终端，发送您的影像与声音特征。
+                    <strong>[建档提示]</strong> 不用按格式填写，也不用重复解释。<br>
+                    你像平时聊天一样告诉 TA 的样子就可以，系统会自动整理成体验版数字生命底稿。
                 </div>`;
             stripePaymentForm.style.display = 'none';
             removeFullPlanStatusPanel();

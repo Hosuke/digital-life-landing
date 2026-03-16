@@ -238,8 +238,8 @@ function defaultActivation(uid, qqNumber = '') {
         },
         steps: [
             qqHint,
-            'Tell who TA is and how TA talks',
-            'Then send 1 front photo and one 10-second voice clip (auto boot)'
+            'Start by naturally describing who TA is, how TA talks, and which memory must stay',
+            'Then the guide will ask for 1 front photo and one 10-second voice clip before auto boot'
         ],
         manualFulfillment: {
             mode: 'manual_scheduling',
@@ -300,7 +300,7 @@ function renderActivationGuide(activationInput, uid) {
     const steps = Array.isArray(activation.steps) && activation.steps.length
         ? activation.steps
         : autoHandoff
-            ? [`Open ${channelLabel} bot chat`, 'Tell who TA is and how TA talks', 'Send 1 front photo and one 10-second voice clip (auto boot)']
+            ? [`Open ${channelLabel} bot chat`, 'Describe who TA is, how TA talks, and one memory that matters', 'Then send 1 front photo and one 10-second voice clip (auto boot)']
             : [`Open ${channelLabel} bot chat`, `Send command: ${command}`, 'Send 1 front photo and one 10-second voice clip'];
     const link = String(activation.entryUrl || activation?.qq?.addFriendUrl || '').trim();
     const manual = activation && activation.manualFulfillment && typeof activation.manualFulfillment === 'object'
@@ -354,13 +354,20 @@ function renderActivationGuide(activationInput, uid) {
 }
 
 async function submitApplyOrder() {
+    const taIdentity = document.getElementById('role').value.trim();
+    const howToTalk = document.getElementById('soul').value.trim();
     const payload = {
         planType: currentPlan,
         applicant: document.getElementById('applicant').value.trim(),
         subject: document.getElementById('subject').value.trim(),
         relation: document.getElementById('relation').value.trim(),
-        role: document.getElementById('role').value.trim(),
-        soul: document.getElementById('soul').value.trim(),
+        role: taIdentity,
+        soul: howToTalk,
+        taIdentity,
+        howToTalk,
+        sharedMemory: document.getElementById('sharedMemory').value.trim(),
+        currentWish: document.getElementById('currentWish').value.trim(),
+        preferredCall: document.getElementById('preferredCall').value.trim(),
         qqNumber: document.getElementById('qqNumber').value.trim(),
         channelPreference: PREFERRED_CHANNEL,
         message: document.getElementById('message').value.trim(),
@@ -554,10 +561,10 @@ applyForm.addEventListener('submit', async (e) => {
 
         } else {
             modalTitle.textContent = 'Experience life mount initialized';
-            modalDesc.innerHTML = `New life construction starts by confirming your UID. Your trial archive is mounted to virtual space.<br><br>
+            modalDesc.innerHTML = `The intake process has started. The QQ guide will first confirm who TA is, how TA speaks, and which memory should survive, then collect photo and voice samples before waking the experience version.<br><br>
                 <div style="text-align: left; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 4px; border-left: 3px solid var(--cyan); margin-top: 15px; font-size: 0.9rem;">
-                    <strong>[System Prompt]</strong> Intercepted 550W init request. Verify your identity immediately via the dedicated comm link.<br>
-                    Click below to enter the encrypted terminal and send your visual and audio features.
+                    <strong>[Intake Prompt]</strong> No rigid format is required.<br>
+                    Just describe TA naturally and the system will turn it into a usable draft for the digital life.
                 </div>`;
             stripePaymentForm.style.display = 'none';
             removeFullPlanStatusPanel();

@@ -248,9 +248,7 @@
 
     <section id="apply" class="section">
         <h2 class="section-title">Submit Upload Application</h2>
-        <p class="form-desc fade-in">Digital Life Card operates on an on-demand generative pricing model.
-            <strong>Subscribe for only $50.00 / month</strong> to unlock all multi-modal voice, video, and text
-            companion features.
+        <p class="form-desc fade-in">Start in natural language: tell us who you want to preserve, how TA speaks, and which memory must not be lost. The QQ intake guide will continue the conversation and help you build this life carefully. <strong>Full service is $50.00 / month</strong>, while the experience tier can start as a free trial.
         </p>
 
         <form class="apply-form glass-panel fade-in" id="applyForm">
@@ -261,7 +259,7 @@
                         <input type="radio" name="planType" value="trial" id="planTrial" checked>
                         <div class="plan-content">
                             <h4>Awakening Trial</h4>
-                            <p>1 Photo + 10s Voice</p>
+                            <p>Interview first, then 1 photo + 10s voice</p>
                             <span class="price">Free Trial</span>
                         </div>
                     </label>
@@ -303,14 +301,30 @@
             </div>
 
             <div class="form-group">
-                <label for="role">Persona Role</label>
-                <input type="text" id="role" required placeholder="e.g. 18-year-old daughter / warm travel companion">
+                <label for="role">Who is TA</label>
+                <input type="text" id="role" required placeholder="e.g. He is my younger brother Hongwen, 23, studying in Nanjing">
             </div>
 
             <div class="form-group">
-                <label for="soul">Persona Soul</label>
+                <label for="soul">How does TA usually speak to you</label>
                 <textarea id="soul" rows="3" required
-                    placeholder="e.g. optimistic, comforting, loves photography, checks in every evening"></textarea>
+                    placeholder="e.g. calm, grounding, never formal, sounds like a late-night WeChat voice note"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="sharedMemory">One memory you most want to keep</label>
+                <textarea id="sharedMemory" rows="3"
+                    placeholder="e.g. Last winter he stayed with me in the hospital corridor all night and kept saying, do not be afraid, I am here."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="currentWish">If TA wakes up now, what would TA most want to continue</label>
+                <input type="text" id="currentWish" placeholder="e.g. keep me company, finish an unfinished goodbye, see today's sky in Nanjing">
+            </div>
+
+            <div class="form-group">
+                <label for="preferredCall">How would TA call you</label>
+                <input type="text" id="preferredCall" placeholder="e.g. sis / dad / A-Ning">
             </div>
 
             <div class="form-group full-plan-only" id="dataCheckgroup" style="display: none;">
@@ -334,8 +348,8 @@
             </div>
 
             <div class="form-group">
-                <label for="message">What do you want to say to future them (As an awakening parameter)</label>
-                <textarea id="message" rows="4" placeholder="For example: Yaya, Daddy misses you very much..."
+                <label for="message">If TA just woke up, what would you say first</label>
+                <textarea id="message" rows="4" placeholder="For example: Hongwen, I am not trying to turn you into software. I just still need to talk to you."
                     required></textarea>
             </div>
 
