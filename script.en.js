@@ -193,8 +193,10 @@ const PAGE_CONFIG = window.DIGITAL_LIFE_CONFIG || {};
 const CONTROL_PLANE_BASE_URL = String(PAGE_CONFIG.controlPlaneBaseUrl || '').trim().replace(/\/+$/, '');
 const TELEGRAM_BOT_USERNAME = String(PAGE_CONFIG.telegramBotUsername || 'splandour_550w_bot').trim();
 const PREFERRED_CHANNEL = String(PAGE_CONFIG.preferredChannel || 'qq').trim().toLowerCase() || 'qq';
-const QQ_BOT_NAME = String(PAGE_CONFIG.qqBotName || 'QQClaw').trim();
+const QQ_BOT_NAME = String(PAGE_CONFIG.qqBotName || 'PocunQQBot').trim();
 const QQ_BOT_UIN = String(PAGE_CONFIG.qqBotUin || '').trim();
+const MANUAL_CONTACT_WECHAT = String(PAGE_CONFIG.manualSchedulingWechat || 'q517754526').trim();
+const MANUAL_CONTACT_QQ = String(PAGE_CONFIG.manualSchedulingQq || '517754526').trim();
 const activationGuideContainer = document.getElementById('activationGuideContainer');
 
 function generateFallbackUid() {
@@ -222,22 +224,32 @@ function htmlSafe(text) {
 function defaultActivation(uid, qqNumber = '') {
     const handoffCommand = `${uid} /handoff`;
     const qqHint = qqNumber
-        ? `Please use QQ account ${qqNumber} to chat with ${QQ_BOT_NAME || 'QQClaw'}`
-        : `Search QQ bot ${QQ_BOT_NAME || 'QQClaw'} first`;
+        ? `Please use QQ account ${qqNumber} to chat with ${QQ_BOT_NAME || 'PocunQQBot'}`
+        : `Search QQ bot ${QQ_BOT_NAME || 'PocunQQBot'} first`;
     return {
         channel: PREFERRED_CHANNEL,
         handoffCommand,
+        autoHandoff: true,
         entryUrl: '',
         qq: {
-            botName: QQ_BOT_NAME || 'QQClaw',
+            botName: QQ_BOT_NAME || 'PocunQQBot',
             botUin: QQ_BOT_UIN || null,
             qqNumber: qqNumber || null
         },
         steps: [
             qqHint,
-            `Send command: ${handoffCommand}`,
-            'Then send 1 front photo and one 10-second voice clip'
-        ]
+            'Tell who TA is and how TA talks',
+            'Then send 1 front photo and one 10-second voice clip (auto boot)'
+        ],
+        manualFulfillment: {
+            mode: 'manual_scheduling',
+            automated: false,
+            contact: {
+                wechat: MANUAL_CONTACT_WECHAT,
+                qq: MANUAL_CONTACT_QQ
+            },
+            message: `After payment, add WeChat ${MANUAL_CONTACT_WECHAT} (QQ ${MANUAL_CONTACT_QQ}) for manual scheduling.`
+        }
     };
 }
 
@@ -284,10 +296,16 @@ function renderActivationGuide(activationInput, uid) {
     const channel = String(activation.channel || '').toLowerCase();
     const channelLabel = channel === 'telegram' ? 'Telegram' : (channel === 'feishu' ? 'Feishu' : 'QQ');
     const command = String(activation.handoffCommand || `${uid} /handoff`);
+    const autoHandoff = activation.autoHandoff !== false;
     const steps = Array.isArray(activation.steps) && activation.steps.length
         ? activation.steps
-        : [`Open ${channelLabel} bot chat`, `Send command: ${command}`, 'Send 1 front photo and one 10-second voice clip'];
+        : autoHandoff
+            ? [`Open ${channelLabel} bot chat`, 'Tell who TA is and how TA talks', 'Send 1 front photo and one 10-second voice clip (auto boot)']
+            : [`Open ${channelLabel} bot chat`, `Send command: ${command}`, 'Send 1 front photo and one 10-second voice clip'];
     const link = String(activation.entryUrl || activation?.qq?.addFriendUrl || '').trim();
+    const manual = activation && activation.manualFulfillment && typeof activation.manualFulfillment === 'object'
+        ? activation.manualFulfillment
+        : null;
 
     const stepsHtml = steps.map((item) => `<li style="margin-bottom:6px;">${htmlSafe(item)}</li>`).join('');
     const openLinkHtml = link
@@ -295,6 +313,12 @@ function renderActivationGuide(activationInput, uid) {
         : '';
     const qqNumber = activation?.qq?.qqNumber ? `<div style="margin-top:8px; opacity:0.8;">Bound QQ: ${htmlSafe(activation.qq.qqNumber)}</div>` : '';
     const qqBotHint = activation?.qq?.botUin ? `<div style="margin-top:6px; opacity:0.75;">Bot ID: ${htmlSafe(activation.qq.botUin)}</div>` : '';
+    const manualHtml = manual
+        ? `<div style="margin-top:12px; padding:10px; border-radius:6px; border:1px dashed rgba(0,243,255,0.35); color:rgba(255,255,255,0.88);">
+                <div style="font-weight:600; margin-bottom:6px;">Manual Scheduling</div>
+                <div>${htmlSafe(manual.message || `After payment, add WeChat ${MANUAL_CONTACT_WECHAT} (QQ ${MANUAL_CONTACT_QQ}) for manual scheduling.`)}</div>
+           </div>`
+        : '';
 
     activationGuideContainer.innerHTML = `
         <div style="padding:12px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.25); text-align:left; font-size:0.92rem;">
@@ -302,11 +326,12 @@ function renderActivationGuide(activationInput, uid) {
             <div style="margin-bottom:8px; opacity:0.9;">UID: ${htmlSafe(uid)}</div>
             ${qqNumber}
             ${qqBotHint}
-            <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+            <div style="margin-top:10px; display:${autoHandoff ? 'none' : 'flex'}; gap:8px; align-items:center;">
                 <code id="handoffCommandText" style="flex:1; display:block; padding:8px; border-radius:6px; background:#111; border:1px solid #2a2a2a; color:var(--cyan); word-break:break-all;">${htmlSafe(command)}</code>
                 <button id="copyHandoffBtn" class="cta-btn" style="white-space:nowrap; font-size:0.9rem; padding:8px 12px;">Copy</button>
             </div>
             <ol style="margin:12px 0 0 20px; padding:0;">${stepsHtml}</ol>
+            ${manualHtml}
             ${openLinkHtml}
         </div>
     `;
