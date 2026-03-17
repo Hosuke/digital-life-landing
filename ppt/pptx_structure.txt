@@ -1,0 +1,426 @@
+Slide size: 7199313x3600450 EMU
+  = 7.9 x 3.9 inches
+Slides: 15
+Layouts: 12
+
+=== Slide 1 (layout: 标题幻灯片) ===
+  [PICTURE (13)] "图片 3"  text=""
+  [TEXT_BOX (17)] "文本框 5"  text="Amberify    珀存"
+    p0 run: "Amberify" font=+mj-lt size=457200 bold=True color=None
+    p0 run: "    " font=+mj-lt size=457200 bold=True color=None
+    p0 run: "珀存" font=+mj-lt size=457200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 7"  text="为数字人格找寻此间的远方，直到在现实中相逢"
+    p0 run: "为数字人格找寻此间的远方，直到在现实中相逢" font=None size=152400 bold=None color=None
+  [AUTO_SHAPE (1)] "矩形 31"  text=""
+  [AUTO_SHAPE (1)] "矩形 32"  text=""
+  [PICTURE (13)] "图片 1"  text=""
+
+=== Slide 2 (layout: 空白) ===
+  [TEXT_BOX (17)] "序号"  text="01"
+    p0 run: "01" font=Inter Medium size=213360 bold=None color=None
+  [TEXT_BOX (17)] "项标题"  text="团队介绍"
+    p0 run: "团队介绍" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+  [TEXT_BOX (17)] "序号"  text="02"
+    p0 run: "02" font=Inter Medium size=213360 bold=None color=None
+  [TEXT_BOX (17)] "项标题"  text="创意来源/需求探究"
+    p0 run: "创意来源" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+    p0 run: "/" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+    p0 run: "需求探究" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+  [TEXT_BOX (17)] "序号"  text="03"
+    p0 run: "03" font=Inter Medium size=213360 bold=None color=None
+  [TEXT_BOX (17)] "序号"  text="04"
+    p0 run: "04" font=Inter Medium size=213360 bold=None color=None
+  [TEXT_BOX (17)] "项标题"  text="产品介绍与展示"
+    p0 run: "产品介绍与展示" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+  [AUTO_SHAPE (1)] "矩形 18"  text=""
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [AUTO_SHAPE (1)] "矩形 31"  text=""
+  [AUTO_SHAPE (1)] "矩形 34"  text=""
+  [AUTO_SHAPE (1)] "标题 4"  text="CONTENTS"
+    p0 run: "CONTENTS" font=Inter Bold size=360045 bold=True color=None
+  [AUTO_SHAPE (1)] "标题 4"  text="目录"
+    p0 run: "目录" font=Alibaba PuHuiTi 2.0 55 Regular size=640080 bold=None color=None
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "项标题"  text="技术背景"
+    p0 run: "技术背景" font=Alibaba PuHuiTi 3.0 55 Regular size=160020 bold=None color=None
+
+=== Slide 3 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 18"  text=""
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [AUTO_SHAPE (1)] "矩形 31"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="团队介绍"
+    p0 run: "团队介绍" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 10"  text="林弘文"
+    p0 run: "林弘文" font=None size=None bold=None color=None
+  [TEXT_BOX (17)] "文本框 11"  text="黄舸洋"
+    p0 run: "黄舸洋" font=None size=None bold=None color=None
+  [TEXT_BOX (17)] "文本框 13"  text="马瑞辰"
+    p0 run: "马瑞辰" font=None size=None bold=None color=None
+
+=== Slide 4 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="创意来源"
+    p0 run: "创意来源" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 1"  text="《流浪地球2》中，图恒宇借助「数字生命卡」，把女儿的意识上传到数字世界。今天的我们，也希望能借助模型，上传人物的信息与「意识」，在聊天软件上创造一个会主动回应、会持续陪伴、能以图文音视频多种形式存"
+    p0 run: "《" font=None size=203200 bold=None color=None
+    p0 run: "流浪地球" font=None size=203200 bold=None color=None
+    p0 run: "2》" font=None size=203200 bold=None color=None
+    p0 run: "中，图恒宇借助「数字生命卡」，把女儿的意识上传到数字世界。" font=None size=203200 bold=None color=None
+    p0 run: "今天的我们，也希望能借助模型，上传人物的信息与「意识」，在聊天软件上创造一个" font=None size=203200 bold=None color=None
+    p0 run: "会主动回应、会持续陪伴、能以图文音视频多种形式存在" font=None size=203200 bold=True color=None
+    p0 run: "的“数字角色”。让使用者感到在世界的某处，有一位挚友" font=None size=203200 bold=None color=None
+    p0 run: "/" font=None size=203200 bold=None color=None
+    p0 run: "亲人正在旅行，为你带来" font=None size=203200 bold=None color=None
+    p0 run: "TA" font=None size=203200 bold=None color=None
+    p0 run: "见到的风景。" font=None size=203200 bold=None color=None
+    p0 run: "用可标注、可控制、可持续的数字角色，为记忆、情感和关系体验提供一个新的承载方式。" font=None size=203200 bold=True color=None
+
+=== Slide 5 (layout: 空白) ===
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="技术架构"
+    p0 run: "技术架构" font=+mj-lt size=None bold=True color=None
+  [PICTURE (13)] "图片 8"  text=""
+  [TEXT_BOX (17)] "文本框 13"  text="多模态模型成熟（更懂世界）"
+    p0 run: "多模态模型成熟（更懂世界）" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 14"  text="视觉、听觉、文本深度融合，全感官理解用户意图，生成式 Al迎来拐点。"
+    p0 run: "视觉、听觉、文本深度融合，全感官理解用户意图，生成式 " font=None size=101600 bold=None color=None
+    p0 run: "Al" font=None size=101600 bold=None color=None
+    p0 run: "迎来拐点" font=None size=101600 bold=None color=None
+    p0 run: "。" font=None size=114300 bold=None color=None
+  [TEXT_BOX (17)] "文本框 15"  text="Agent 行动能力（能做实事）"
+    p0 run: "Agent " font=None size=127000 bold=True color=None
+    p0 run: "行动能力（能做实事）" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 16"  text="消息通道成熟（全域互通）"
+    p0 run: "消息通道成熟（全域互通）" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 17"  text="OpenClaw A2A 编排（系统整合）"
+    p0 run: "OpenClaw" font=None size=127000 bold=True color=None
+    p0 run: " A2A " font=None size=127000 bold=True color=None
+    p0 run: "编排（系统整合）" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 19"  text="成熟"
+    p0 run: "成熟" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 20"  text="Agent"
+    p0 run: "Agent" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 21"  text="消息通道"
+    p0 run: "消息通道" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 22"  text="Openclaw"
+    p0 run: "Openclaw" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 23"  text="从对话向自主规划、工具调用、多步执行演进，从‘数字员工’迈向‘数字伙伴’"
+    p0 run: "从对话向自主规划、工具调用、多步执行演进，从‘数字员工’迈向‘数字伙伴’" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 24"  text="微信、钉钉、飞书、企业微信接口开放与生态完善，为A2A 提供底层连接能力。"
+    p0 run: "微信、钉钉、飞书、企业微信接口开放与生态完善，为" font=None size=101600 bold=None color=None
+    p0 run: "A2A " font=None size=101600 bold=None color=None
+    p0 run: "提供底层连接能力。" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 25"  text="我们解决了Agents 间的“协同危机’，通过OpenClaw 框架实现高效可靠的 Agents 编排与通信"
+    p0 run: "我们解决了" font=None size=88900 bold=None color=None
+    p0 run: "Agents " font=None size=88900 bold=None color=None
+    p0 run: "间的“协同危机’，通过" font=None size=88900 bold=None color=None
+    p0 run: "OpenClaw" font=None size=88900 bold=None color=None
+    p0 run: " " font=None size=88900 bold=None color=None
+    p0 run: "框架实现高效可靠的 " font=None size=88900 bold=None color=None
+    p0 run: "Agents " font=None size=88900 bold=None color=None
+    p0 run: "编排与通信" font=None size=88900 bold=None color=None
+  [TEXT_BOX (17)] "文本框 26"  text="用户入口 | OpenClaw A2A | 角色推理 | Gemini 图像 | Veo 视频 | Kling 语音与环境音 | 消息投递"
+    p0 run: "用户入口" font=None size=203200 bold=None color=None
+    p1 run: "OpenClaw" font=None size=203200 bold=None color=None
+    p1 run: " A2A" font=None size=203200 bold=None color=None
+    p2 run: "角色推理" font=None size=203200 bold=None color=None
+    p3 run: "Gemini " font=None size=203200 bold=None color=None
+    p3 run: "图像" font=None size=203200 bold=None color=None
+    p4 run: "Veo " font=None size=203200 bold=None color=None
+    p4 run: "视频" font=None size=203200 bold=None color=None
+    p5 run: "Kling " font=None size=203200 bold=None color=None
+    p5 run: "语音与环境音" font=None size=203200 bold=None color=None
+    p6 run: "消息投递" font=None size=203200 bold=None color=None
+
+=== Slide 6 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 18"  text=""
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [AUTO_SHAPE (1)] "矩形 31"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [PICTURE (13)] "图片 2"  text=""
+  [TEXT_BOX (17)] "文本框 3"  text="多模态数字角色"
+    p0 run: "多模态数字角色" font=None size=177800 bold=None color=None
+  [TEXT_BOX (17)] "文本框 4"  text="文字消息"
+    p0 run: "文字消息" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 5"  text="旅行日记"
+    p0 run: "旅行日记" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 6"  text="环境音"
+    p0 run: "环境音" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 7"  text="旅行视频"
+    p0 run: "旅行视频" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 8"  text="自拍照"
+    p0 run: "自拍照" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 10"  text="语音消息"
+    p0 run: "语音消息" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 1"  text="超越纯文本：不仅是对话，更是可持续存在，可主动回应，通过IM触达的多元感官共生体"
+    p0 run: "超越纯文本：不仅是对话，更是可持续存在，可主动回应，通过" font=None size=152400 bold=None color=None
+    p0 run: "IM" font=None size=152400 bold=None color=None
+    p0 run: "触达的多元感官共生体" font=None size=152400 bold=None color=None
+
+=== Slide 7 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 1"  text="多模态消息流"
+    p0 run: "多模态消息流" font=None size=203200 bold=None color=None
+  [PICTURE (13)] "图片 3"  text=""
+  [PICTURE (13)] "图片 5"  text=""
+  [PICTURE (13)] "图片 7"  text=""
+  [PICTURE (13)] "图片 8"  text=""
+  [PICTURE (13)] "图片 10"  text=""
+  [PICTURE (13)] "图片 13"  text=""
+  [MEDIA (16)] "3a64a06d-1def-4577-af88-59f4cd413741"  text=""
+  [TEXT_BOX (17)] "文本框 15"  text="文字消息"
+    p0 run: "文字消息" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 16"  text="视频片段"
+    p0 run: "视频片段" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 17"  text="心情日记"
+    p0 run: "心情日记" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 19"  text="语音消息"
+    p0 run: "语音消息" font=None size=127000 bold=None color=None
+
+=== Slide 8 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 1"  text="为什么她真的像在生活"
+    p0 run: "为什么她真的像在生活" font=None size=203200 bold=None color=None
+  [PICTURE (13)] "图片 11"  text=""
+  [TEXT_BOX (17)] "文本框 18"  text="角色初始化"
+    p0 run: "角色初始化" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 20"  text="初始设置，从性格定义数字生活"
+    p0 run: "初始设置，从性格定义数字生活" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 21"  text="多模态内容生成"
+    p0 run: "多模态内容生成" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 22"  text="每日旅行计划"
+    p0 run: "每日旅行计划" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 23"  text="公开信息检索"
+    p0 run: "公开信息检索" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 24"  text="IM 回传"
+    p0 run: "IM " font=None size=127000 bold=True color=None
+    p0 run: "回传" font=None size=127000 bold=True color=None
+  [TEXT_BOX (17)] "文本框 25"  text="生成每日行程，寻找出发点与重要景点"
+    p0 run: "生成每日行程，寻找出发点与重要景点" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 26"  text="安全高效生成即时生活更新，发送到聊天平台"
+    p0 run: "安全高效生成即时生活更新，发送到聊天平台" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 28"  text="基于当天事件，创作语音、照片、视频等多模态内容"
+    p0 run: "基于当天事件，创作语音、照片、视频等多模态内容" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 30"  text="自动化搜索公共数据，近期新闻，本地天气，自动识别与角色有关内容"
+    p0 run: "自动化搜索公共数据，近期新闻，本地天气，自动识别与角色有关内容" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 31"  text="搜索|"
+    p0 run: "搜索" font=None size=101600 bold=None color=None
+    p0 run: "|" font=None size=101600 bold=None color=None
+  [TEXT_BOX (17)] "文本框 32"  text="公共数据"
+    p0 run: "公共数据" font=None size=76200 bold=None color=None
+  [TEXT_BOX (17)] "文本框 36"  text="近期新闻"
+    p0 run: "近期新闻" font=None size=76200 bold=None color=None
+  [TEXT_BOX (17)] "文本框 37"  text="本地天气"
+    p0 run: "本地天气" font=None size=76200 bold=None color=None
+
+=== Slide 9 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 18"  text=""
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [AUTO_SHAPE (1)] "矩形 31"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 1"  text="真实演示，角色一致"
+    p0 run: "真实演示，角色一致" font=+mj-lt size=203200 bold=None color=None
+  [PICTURE (13)] "图片 3"  text=""
+  [TEXT_BOX (17)] "文本框 4"  text="问候与定位"
+    p0 run: "问候与定位" font=None size=177800 bold=True color=None
+  [TEXT_BOX (17)] "文本框 5"  text="自然对话启动，获取上下文"
+    p0 run: "自然对话启动，获取上下文" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 6"  text="旅行视频"
+    p0 run: "旅行视频" font=None size=177800 bold=True color=None
+  [TEXT_BOX (17)] "文本框 7"  text="夜景与环境反馈"
+    p0 run: "夜景与环境反馈" font=None size=177800 bold=True color=None
+  [TEXT_BOX (17)] "文本框 8"  text="AI 自拍"
+    p0 run: "AI " font=None size=177800 bold=True color=None
+    p0 run: "自拍" font=None size=177800 bold=True color=None
+  [TEXT_BOX (17)] "文本框 10"  text="低光增强，感知环境氛围"
+    p0 run: "低光增强，感知环境氛围" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 11"  text="自动剪辑精彩瞬间，添加旁白"
+    p0 run: "自动剪辑精彩瞬间，添加旁白" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 13"  text="智能识别面部，实时风格优化"
+    p0 run: "智能识别面部，实时风格优化" font=None size=127000 bold=None color=None
+  [MEDIA (16)] "demo_1_432x960"  text=""
+
+=== Slide 10 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [PICTURE (13)] "图片 3"  text=""
+  [TEXT_BOX (17)] "文本框 4"  text="MimiClaw:  把数字生命放入用户手心"
+    p0 run: "MimiClaw" font=None size=None bold=None color=None
+    p0 run: ":  " font=None size=None bold=None color=None
+    p0 run: "把数字生命放入用户手心" font=None size=None bold=None color=None
+  [TEXT_BOX (17)] "文本框 5"  text="拥有感"
+    p0 run: "拥有感" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 6"  text="便携物理容器，让数字资产具现化"
+    p0 run: "便携物理容器，让数字资产具现化" font=None size=152400 bold=None color=None
+  [AUTO_SHAPE (1)] "矩形 7"  text=""
+  [TEXT_BOX (17)] "文本框 8"  text="本地化部署"
+    p0 run: "本地化部署" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 10"  text="陪伴感"
+    p0 run: "陪伴感" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 13"  text="隐私数据全在本地处理，不上传云端，低延迟响应，极致交互体验"
+    p0 run: "隐私数据全在本地处理，不上传云端，低延迟响应，极致交互体验" font=None size=152400 bold=None color=None
+  [TEXT_BOX (17)] "文本框 14"  text="情感陪伴模型，时刻洞察用户需求，全天候在线，营造无         缝情感链接           "
+    p0 run: "情感陪伴模型，时刻洞察用户需求，全天候在线，营造无         缝情感链接           " font=None size=152400 bold=None color=None
+
+=== Slide 11 (layout: 空白) ===
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [PICTURE (13)] "图片 3"  text=""
+  [TEXT_BOX (17)] "文本框 4"  text="亲情怀念"
+    p0 run: "亲情怀念" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 5"  text="虚拟角色与偶像"
+    p0 run: "虚拟角色与偶像" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 6"  text="数字陪伴"
+    p0 run: "数字陪伴" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 1"  text="服务多种情感需求"
+    p0 run: "服务多种情感需求" font=None size=None bold=None color=None
+  [TEXT_BOX (17)] "文本框 7"  text="连接时空，重温温情时刻 | 个性化家庭记忆空间 | 弥合地理距离的情感寄托"
+    p0 run: "连接时空，重温温情时刻" font=None size=127000 bold=None color=None
+    p1 run: "个性化家庭记忆空间" font=None size=127000 bold=None color=None
+    p2 run: "弥合地理距离的情感寄托" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 8"  text="AI伙伴全天暖心守候 | 懂你的倾诉与情绪引导 | 打破孤独感，建立心灵链接"
+    p0 run: "AI" font=None size=127000 bold=None color=None
+    p0 run: "伙伴全天暖心守候" font=None size=127000 bold=None color=None
+    p1 run: "懂你的倾诉与情绪引导" font=None size=127000 bold=None color=None
+    p2 run: "打破孤独感，建立心灵链接" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 10"  text="专属互动，更近距离感受 | 个性化周边与内容体验 | 共鸣情感，追随榜样力量"
+    p0 run: "专属互动，更近距离感受" font=None size=127000 bold=None color=None
+    p1 run: "个性化周边与内容体验" font=None size=127000 bold=None color=None
+    p2 run: "共鸣情感，追随榜样力量" font=None size=127000 bold=None color=None
+
+=== Slide 12 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [PICTURE (13)] "图片 2"  text=""
+  [PICTURE (13)] "图片 4"  text=""
+  [PICTURE (13)] "图片 6"  text=""
+  [TEXT_BOX (17)] "文本框 7"  text="我的爱豆"
+    p0 run: "我的爱豆" font=None size=127000 bold=None color=None
+  [PICTURE (13)] "图片 10"  text=""
+  [TEXT_BOX (17)] "文本框 11"  text="听到一条语音"
+    p0 run: "听到一条语音" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 13"  text="实时更新动态"
+    p0 run: "实时更新动态" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 14"  text="收到一张自拍"
+    p0 run: "收到一张自拍" font=None size=127000 bold=None color=None
+  [PICTURE (13)] "图片 16"  text=""
+  [TEXT_BOX (17)] "文本框 17"  text="专属感、陪伴感、持续联系"
+    p0 run: "专属感、陪伴感、持续联系" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 18"  text="随时随地，不仅是消息，更是情感的跨时空陪伴。独一无二的数字羁绊。"
+    p0 run: "随时随地，不仅是消息，更是情感的跨时空陪伴。独一无二的数字羁绊。" font=None size=152400 bold=None color=None
+
+=== Slide 13 (layout: 空白) ===
+  [PICTURE (13)] "图片 2"  text=""
+  [AUTO_SHAPE (1)] "矩形 16"  text=""
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="成本与计费规划"
+    p0 run: "成本与计费规划" font=+mj-lt size=None bold=True color=None
+  [TEXT_BOX (17)] "文本框 4"  text="自拍照 （约0.05元）"
+    p0 run: "自拍照 （约" font=None size=127000 bold=None color=None
+    p0 run: "0.05" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 5"  text="旅行视频8秒 （约0.50元）"
+    p0 run: "旅行视频" font=None size=127000 bold=None color=None
+    p0 run: "8" font=None size=127000 bold=None color=None
+    p0 run: "秒 （约" font=None size=127000 bold=None color=None
+    p0 run: "0.50" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 6"  text="环境音（约0.05元）"
+    p0 run: "环境音（约" font=None size=127000 bold=None color=None
+    p0 run: "0.05" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 7"  text="语音消息 （约0.085元）"
+    p0 run: "语音消息 （约" font=None size=127000 bold=None color=None
+    p0 run: "0.085" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 8"  text="完整一次推送（约0.72元）"
+    p0 run: "完整一次推送（约" font=None size=127000 bold=None color=None
+    p0 run: "0.72" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 10"  text="轻度互动（可低于0.1元）"
+    p0 run: "轻度互动（可低于" font=None size=127000 bold=None color=None
+    p0 run: "0.1" font=None size=127000 bold=None color=None
+    p0 run: "元）" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 11"  text="每日活跃API调用"
+    p0 run: "每日活跃" font=None size=127000 bold=None color=None
+    p0 run: "API" font=None size=127000 bold=None color=None
+    p0 run: "调用" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 14"  text="成本结构"
+    p0 run: "成本结构" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 15"  text="数据传输"
+    p0 run: "数据传输" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 17"  text="计算资源 | 35%"
+    p0 run: "计算资源" font=None size=127000 bold=None color=None
+    p1 run: "35%" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 18"  text="模型推理 | 12%"
+    p0 run: "模型推理" font=None size=127000 bold=None color=None
+    p1 run: "12%" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 19"  text="网络流量 | 28%"
+    p0 run: "网络流量" font=None size=127000 bold=None color=None
+    p1 run: "28%" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 20"  text="存储空间 | 20%"
+    p0 run: "存储空间" font=None size=127000 bold=None color=None
+    p1 run: "20%" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 21"  text="其他 | 5%"
+    p0 run: "其他" font=None size=127000 bold=None color=None
+    p1 run: "5%" font=None size=127000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 22"  text="按需计费，而不是强推订阅"
+    p0 run: "按需计费，而不是强推订阅" font=None size=203200 bold=None color=None
+
+=== Slide 14 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "矩形 29"  text=""
+  [PICTURE (13)] "图片 35"  text=""
+  [PICTURE (13)] "图片 12"  text=""
+  [TEXT_BOX (17)] "文本框 9"  text="产品展示"
+    p0 run: "产品展示" font=+mj-lt size=None bold=True color=None
+  [PICTURE (13)] "图片 2"  text=""
+  [TEXT_BOX (17)] "文本框 3"  text="不是复活，而是让爱继续有地方存在"
+    p0 run: "不是复活，而是让爱继续有地方存在" font=None size=254000 bold=None color=None
+  [TEXT_BOX (17)] "文本框 4"  text="合规边界与用户控制"
+    p0 run: "合规边界与用户控制" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 5"  text="全链路技术验证"
+    p0 run: "全链路技术验证" font=None size=203200 bold=True color=None
+  [TEXT_BOX (17)] "文本框 6"  text="所有AI生成内容均明确标注 | 严守用户隐私政策 | 用户拥有数字生命卡完整控制权"
+    p0 run: "所有" font=None size=139700 bold=None color=None
+    p0 run: "AI" font=None size=139700 bold=None color=None
+    p0 run: "生成内容均明确标注" font=None size=139700 bold=None color=None
+    p1 run: "严守用户隐私政策" font=None size=139700 bold=None color=None
+    p2 run: "用户拥有数字生命卡完整控制权" font=None size=139700 bold=None color=None
+  [TEXT_BOX (17)] "文本框 7"  text="完整场景链路已全部跑通 | 系统稳定可靠，支持大规模应用"
+    p0 run: "完整场景链路已全部跑通" font=None size=139700 bold=None color=None
+    p1 run: "系统稳定可靠，支持大规模应用" font=None size=139700 bold=None color=None
+  [TEXT_BOX (17)] "文本框 8"  text="每一张数字生命卡，都是一份不愿放手的爱"
+    p0 run: "每一张数字生命卡，都是一份不愿放手的爱" font=None size=None bold=None color=None
+
+=== Slide 15 (layout: 空白) ===
+  [AUTO_SHAPE (1)] "标题 1"  text="THANKS"
+    p0 run: "THANKS" font=Inter Medium size=640080 bold=False color=None
+
