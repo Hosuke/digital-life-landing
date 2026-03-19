@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>珀存 Amberify - ModelScope 体验版</title>
+  <meta name="description" content="Amberify 珀存 ModelScope 静态体验页。体验版提交后进入 QQ 建档；付费版提交后通过邮件联系人工排期。">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="particleCanvas"></canvas>
+
+  <nav class="navbar">
+    <div class="logo">
+      <span class="icon-badge">∞</span>
+      <span class="logo-text">珀<span class="highlight">存</span></span>
+    </div>
+    <div class="menu">
+      <a href="#about">产品概念</a>
+      <a href="#experience">体验流程</a>
+      <a href="#apply" class="nav-btn">立即申请</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-content">
+      <h1 class="glitch" data-text="珀存 Amberify">珀存 Amberify</h1>
+      <p class="subtitle">琥珀凝住了万年前的生命，我们凝住你还没来得及说完的话。</p>
+      <div class="quote-box">
+        <p class="quote">“不是复活，不是冒充。是让 TA 在数字的一半里继续生活。”</p>
+        <p class="author">— Amberify / 珀存</p>
+      </div>
+      <div class="hero-actions">
+        <a href="#apply" class="cta-btn">进入体验申请</a>
+        <a href="#experience" class="secondary-btn">查看体验方式</a>
+      </div>
+    </div>
+  </header>
+
+  <section id="about" class="section">
+    <h2 class="section-title">这不是一个聊天框，而是一个连续生活的数字生命</h2>
+    <div class="cards-container">
+      <div class="glass-card fade-in">
+        <div class="icon-badge">文</div>
+        <h3>文字对话</h3>
+        <p>TA 会像在微信或 QQ 里那样和你说话，记得你们之间的关系、记忆和说话方式。</p>
+      </div>
+      <div class="glass-card fade-in" style="transition-delay:0.15s;">
+        <div class="icon-badge">图</div>
+        <h3>图片回传</h3>
+        <p>TA 会在当前生活场景里，发一张自然的随手拍，而不是海报式的生成图。</p>
+      </div>
+      <div class="glass-card fade-in" style="transition-delay:0.3s;">
+        <div class="icon-badge">声</div>
+        <h3>语音与环境音</h3>
+        <p>TA 会用更接近日常的方式回你，声音、语气和情境来自同一条连续时间线。</p>
+      </div>
+      <div class="glass-card fade-in" style="transition-delay:0.45s;">
+        <div class="icon-badge">景</div>
+        <h3>场景连续性</h3>
+        <p>天气、地点、活动、傍晚与深夜的节奏，会共同组成 TA 这一天的生活状态。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience" class="section">
+    <h2 class="section-title">ModelScope 展示版如何体验</h2>
+    <div class="glass-panel fade-in" style="max-width: 1100px; margin: 0 auto; padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
+      <div style="flex: 1; min-width: 300px; text-align: left;">
+        <div class="summary-chip">推荐路径：网页提交 → QQ 建档 → 继续发图 / 语音</div>
+        <p style="color: var(--text-gray); font-size: 1.05rem; line-height: 1.9; margin: 24px 0;">
+          这个页面本身是静态展示页，不在 ModelScope 内直接跑后端。
+          体验版提交后，会进入你的 QQ 私聊机器人继续建档；付费版提交后，则直接生成一封邮件草稿，发到 <strong>sukebeta@outlook.com</strong>，用于人工排期。
+        </p>
+        <div class="req-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <div class="req-item">
+            <div class="icon-badge">1</div>
+            <h4>先说 TA 是谁</h4>
+            <p>不是填表思路，而是像聊天一样描述：TA 是谁、怎么说话、你们的关系和记忆。</p>
+          </div>
+          <div class="req-item">
+            <div class="icon-badge">2</div>
+            <h4>QQ 继续建档</h4>
+            <p>体验版会引导你去 QQ 继续补照片和语音，并生成这只数字生命的专属 skill 包。</p>
+          </div>
+          <div class="req-item">
+            <div class="icon-badge">3</div>
+            <h4>付费版转人工排期</h4>
+            <p>付费版不会在静态页里扣款，提交后直接拉起邮件，人工确认档案与排期。</p>
+          </div>
+        </div>
+      </div>
+      <div style="flex: 0 0 auto; margin: 0 auto;">
+        <div style="border: 2px solid rgba(0, 243, 255, 0.4); border-radius: 20px; overflow: hidden; box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); width: 260px; position: relative;">
+          <video src="demo_1_432x960.mp4" autoplay loop muted playsinline controls style="width: 100%; display: block; filter: brightness(0.9);"></video>
+          <div style="position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.72); font-size: 0.8rem; pointer-events: none;">静态页只做入口，真实体验在 QQ</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="apply" class="section">
+    <h2 class="section-title">提交申请</h2>
+    <p class="form-desc fade-in">体验版会继续进入 QQ 建档；付费版会直接整理成邮件草稿，发往 <strong>sukebeta@outlook.com</strong> 进行人工排期。</p>
+
+    <form class="apply-form glass-panel fade-in" id="applyForm">
+      <div class="form-group plan-selection">
+        <label>选择服务方案</label>
+        <div class="plan-cards">
+          <label class="plan-card">
+            <input type="radio" name="planType" value="trial" checked>
+            <div class="plan-content">
+              <h4>体验版</h4>
+              <p>提交后进入 QQ 建档，再补照片与语音</p>
+              <span class="price">免费体验</span>
+            </div>
+          </label>
+          <label class="plan-card">
+            <input type="radio" name="planType" value="full">
+            <div class="plan-content">
+              <h4>完整服务版</h4>
+              <p>提交后自动整理邮件，人工联系排期</p>
+              <span class="price">人工排期</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="applicant">你的名字</label>
+        <input type="text" id="applicant" required placeholder="请输入你的名字">
+      </div>
+
+      <div class="form-group">
+        <label for="subject">TA 的名字</label>
+        <input type="text" id="subject" required placeholder="请输入 TA 的名字">
+      </div>
+
+      <div class="form-group">
+        <label for="relation">你和 TA 的关系</label>
+        <input type="text" id="relation" required placeholder="例如：弟弟 / 妈妈 / 朋友 / 爱人">
+      </div>
+
+      <div class="form-group trial-only">
+        <label for="qqNumber">体验绑定 QQ 号</label>
+        <input type="text" id="qqNumber" placeholder="体验版建议填写你的 QQ 号，用于进入 QQ 建档">
+      </div>
+
+      <div class="form-group">
+        <label for="role">TA 是谁</label>
+        <input type="text" id="role" required placeholder="例如：他是我弟弟，23 岁，在厦门理工读大四">
+      </div>
+
+      <div class="form-group">
+        <label for="soul">TA 平时怎么和你说话</label>
+        <textarea id="soul" rows="3" required placeholder="例如：说话很慢，很克制，但其实很关心我，像深夜微信那样自然"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="sharedMemory">你们最想留下的一段记忆</label>
+        <textarea id="sharedMemory" rows="3" placeholder="例如：去年冬天我们一起熬夜写代码，他一直说别急，我在。"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="currentWish">如果 TA 现在醒来，最想继续完成什么</label>
+        <input type="text" id="currentWish" placeholder="例如：继续陪我、继续写代码、把没说完的话说完">
+      </div>
+
+      <div class="form-group">
+        <label for="preferredCall">TA 会怎么称呼你</label>
+        <input type="text" id="preferredCall" placeholder="例如：姐姐 / 哥 / 爸爸 / 阿宁">
+      </div>
+
+      <div class="form-group full-only" style="display:none;">
+        <label for="contactEmail">你的联系邮箱</label>
+        <input type="email" id="contactEmail" placeholder="用于人工排期回信，建议填写">
+      </div>
+
+      <div class="form-group">
+        <label for="message">如果 TA 刚刚醒来，你最想先对 TA 说什么</label>
+        <textarea id="message" rows="4" required placeholder="例如：弘文，我不是想把你变成程序，我只是还想继续和你说话。"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <span class="btn-text" id="submitBtnText">提交并开始体验</span>
+      </button>
+      <p class="form-note">体验版会继续跳转 QQ 建档；付费版会拉起邮件客户端，收件人固定为 <strong>sukebeta@outlook.com</strong>。</p>
+    </form>
+  </section>
+
+  <div class="modal-overlay" id="resultModal">
+    <div class="modal-content glass-panel" style="max-width: 680px;">
+      <div class="modal-icon"><span class="icon-badge">◎</span></div>
+      <h2 id="modalTitle">提交成功</h2>
+      <div style="background: rgba(0, 243, 255, 0.05); border: 1px solid var(--cyan); padding: 15px; border-radius: 8px; margin: 20px 0;">
+        <p style="font-size: 0.9rem; color: var(--text-gray); margin-bottom: 5px;">唯一标识</p>
+        <p><strong id="sequenceNumber" class="glitch" style="font-size: 1.4rem; letter-spacing: 2px;">UID-AMBER-XXXXX</strong></p>
+      </div>
+      <div id="modalBody" class="modal-desc"></div>
+      <div id="activationGuideContainer"></div>
+      <button class="nav-btn" onclick="closeModal()" style="display:block; margin: 20px auto 0; background:transparent; border:none; color:rgba(255,255,255,0.5)!important; text-decoration:underline; cursor:pointer;">关闭</button>
+    </div>
+  </div>
+
+  <script>
+    window.MODELSCOPE_STATIC_CONFIG = {
+      controlPlaneBaseUrl: 'https://qqbot.qungan.com',
+      preferredChannel: 'qq',
+      qqBotName: '珀存QQBot',
+      qqBotUin: '',
+      paidContactEmail: 'sukebeta@outlook.com',
+      manualSchedulingWechat: 'q517754526',
+      manualSchedulingQq: '517754526'
+    };
+  </script>
+  <script src="script.js"></script>
+</body>
+</html>
