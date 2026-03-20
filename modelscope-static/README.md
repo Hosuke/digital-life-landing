@@ -12,7 +12,7 @@ This folder is the self-contained static package for publishing Amberify / ç€å­
 Use **Static SDK**.
 
 ## Runtime Behavior
-- Trial plan: submits to `https://qqbot.qungan.com/api/apply`, then continues onboarding in QQ.
+- Trial plan: submits to `https://api.amberify.me/api/apply`, then continues onboarding in QQ.
 - Full plan: does not charge on the page. It opens a mail draft to `sukebeta@outlook.com` for manual scheduling.
 
 ## Publish Notes

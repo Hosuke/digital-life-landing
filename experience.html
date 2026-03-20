@@ -203,6 +203,10 @@
             border: 1px solid rgba(255, 255, 255, 0.12);
         }
 
+        .message.pending .bubble {
+            opacity: 0.72;
+        }
+
         .message.system .bubble {
             background: rgba(255, 193, 7, 0.08);
             border: 1px solid rgba(255, 193, 7, 0.2);
@@ -222,6 +226,30 @@
             overflow: hidden;
             border: 1px solid rgba(0, 243, 255, 0.16);
             background: rgba(0, 0, 0, 0.2);
+        }
+
+        .media-card.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 112px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .media-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.92rem;
+            padding: 22px 12px;
+            text-align: center;
+        }
+
+        .media-placeholder i {
+            color: var(--cyan);
         }
 
         .media-card img,
@@ -456,7 +484,7 @@
                     <div class="upload-actions" style="margin-top: 14px;">
                         <input type="file" id="audioInput" class="hidden-file" accept="audio/ogg,audio/opus,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/wave,audio/webm">
                         <button type="button" class="mini-btn" id="audioBtn">
-                            <i class="fa-solid fa-waveform-lines"></i> 上传音频
+                            <i class="fa-solid fa-wave-square"></i> 上传音频
                         </button>
                         <button type="button" class="ghost-btn" id="skipAudioBtn">暂时跳过音频</button>
                     </div>
@@ -515,7 +543,7 @@
     <script>
         (function () {
             const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
-            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://qqbot.qungan.com';
+            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://api.amberify.me';
             window.DIGITAL_LIFE_CONFIG = Object.assign({
                 controlPlaneBaseUrl: defaultBaseUrl,
                 manualSchedulingWechat: 'q517754526',
