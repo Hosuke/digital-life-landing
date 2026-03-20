@@ -3,26 +3,95 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createApiClient, ApiError, fileToDataUrl } from '../lib/api';
 import { readConfig } from '../lib/config';
 import { clearSnapshot, loadSnapshot, saveSnapshot } from '../lib/storage';
-import type { ApplyPayload, MediaTaskView, OptimisticMessage, WebDemoView } from '../lib/types';
+import type {
+  ApplyPayload,
+  MediaTaskView,
+  OptimisticMessage,
+  SessionSnapshot,
+  WebDemoSessionResponse,
+  WebDemoView
+} from '../lib/types';
 import { ChatTimeline } from './ChatTimeline';
 import { Composer } from './Composer';
+import { LiveChatThread } from './LiveChatThread';
+import { MediaTaskFeed } from './MediaTaskFeed';
 import { PaywallPanel } from './PaywallPanel';
+import { RestoreSessionPanel } from './RestoreSessionPanel';
+import { SessionAccessCard } from './SessionAccessCard';
 import { SessionBootstrap } from './SessionBootstrap';
 import { StatusBar } from './StatusBar';
 import { UploadTray } from './UploadTray';
+
+type EntryMode = 'landing' | 'new' | 'restore';
+
+interface PhaseMeta {
+  label: string;
+  title: string;
+  summary: string;
+  checklist: string[];
+}
 
 function hasActiveTasks(tasks: MediaTaskView[] = []): boolean {
   return tasks.some((task) => task.status === 'queued' || task.status === 'progress' || task.status === 'retrying');
 }
 
+function phaseMeta(phase = ''): PhaseMeta {
+  const value = String(phase || '').trim();
+  if (value === 'asset_intake') {
+    return {
+      label: '等待素材',
+      title: '还差让 TA 更像本人的素材',
+      summary: '继续聊天补档也可以，但现在最关键的是一张正面照。音频不是必需，没有音频时会先按画像匹配默认声线。',
+      checklist: ['上传 1 张清晰正面照', '可选上传 1 段音频', '不用重复发模板，像平时聊天那样补充就够了']
+    };
+  }
+  if (value === 'ready_to_boot') {
+    return {
+      label: '准备启动',
+      title: '资料已经够了，系统会开始锁定角色',
+      summary: '现在不需要再重复说明。系统会把当前建档信息整理为角色设定，并准备进入 live。',
+      checklist: ['等待系统锁定角色', '保持当前页面打开', '几秒后会自动进入 live']
+    };
+  }
+  if (value === 'locking') {
+    return {
+      label: '正在唤醒',
+      title: 'TA 正在被唤醒',
+      summary: '这一段时间里输入会暂时收紧。等角色初始化完成后，界面会切换到 live，聊天语气也会从建档采集转成角色本人。',
+      checklist: ['等待初始化完成', '不要重复发多条催促消息', '准备进入 live 对话']
+    };
+  }
+  if (value === 'live') {
+    return {
+      label: '已进入 live',
+      title: '现在已经是角色本人在回复',
+      summary: '建档阶段已经结束。接下来应当像普通聊天一样交流，图片、语音、视频会作为媒体任务陆续回填。',
+      checklist: ['直接聊天，不再填表', '可以索要照片、语音、视频', '若刷新页面，可用本机缓存或 UID + 令牌找回']
+    };
+  }
+  return {
+    label: '建档采集',
+    title: '先让系统理解你想留住的是谁',
+    summary: '这一阶段不是“角色本人”在说话，而是建档代理在温和地整理信息。继续自然描述 TA 是谁、怎么说话、你们之间的记忆。',
+    checklist: ['补充 TA 的身份与关系', '补充 TA 的说话风格', '完成后上传照片进入下一阶段']
+  };
+}
+
+function phaseClassName(phase = ''): string {
+  const value = String(phase || '').trim();
+  if (value === 'live') return 'live';
+  if (value === 'locking' || value === 'ready_to_boot') return 'awakening';
+  return 'onboarding';
+}
+
 function buildStatusHint(webDemo: WebDemoView | null, wechat: string, email: string): string {
-  if (!webDemo) return '先填写左侧表单，系统会为这次体验分配 UID 和会话令牌。';
+  if (!webDemo) return '先创建一个体验会话，或找回你之前已经建立过的角色。';
   if (webDemo.paywallLocked) return `试用已结束。继续体验请联系微信 ${wechat} 或邮件 ${email}。`;
-  if (webDemo.phase === 'discovery') return '继续用自然语言描述 TA。像聊天一样补充：TA 是谁、TA 怎么说话、你们之间的记忆。';
-  if (webDemo.phase === 'asset_intake') return '现在最关键的是一张正面照。音频不是必需，但有的话会更像 TA。';
-  if (webDemo.phase === 'ready_to_boot') return '资料已经够了，系统会自动把 TA 启动起来。';
-  if (webDemo.phase === 'locking') return '角色正在被唤醒。先不用重复发消息，几秒后就会进入 live。';
-  return '现在已经进入 live。你可以继续像平时那样聊天，也可以直接要照片、语音或视频。';
+  if (webDemo.phase === 'discovery') return '当前是建档阶段。你看到的是采集代理，不是角色本人。继续自然补充 TA 的身份、说话风格和你们之间的记忆。';
+  if (webDemo.phase === 'asset_intake') return '当前最关键的是一张正面照。若没有音频，也可以先用默认声线继续推进。';
+  if (webDemo.phase === 'ready_to_boot') return '资料已经够了，系统会自动把 TA 锁定并准备唤醒。';
+  if (webDemo.phase === 'locking') return '角色正在唤醒。等几秒，界面会切换到 live。';
+  return '现在已经进入 live。后续回复应视为角色本人。你可以继续聊天，或直接要求照片、语音、视频。';
 }
 
 function mergeWebDemo(base: WebDemoView | null, tasks: MediaTaskView[] | null): WebDemoView | null {
@@ -33,15 +102,20 @@ function mergeWebDemo(base: WebDemoView | null, tasks: MediaTaskView[] | null): 
   };
 }
 
+function nextSessionSnapshot(uid: string, clientToken: string, webDemo: WebDemoView | null): SessionSnapshot {
+  return { uid, clientToken, lastWebDemo: webDemo };
+}
+
 export function AppShell() {
   const queryClient = useQueryClient();
   const config = useMemo(() => readConfig(), []);
-  const initialSnapshot = useMemo(() => loadSnapshot(), []);
-  const [uid, setUid] = useState(initialSnapshot?.uid || '');
-  const [clientToken, setClientToken] = useState(initialSnapshot?.clientToken || '');
+  const [localSnapshot, setLocalSnapshot] = useState<SessionSnapshot | null>(() => loadSnapshot());
+  const [uid, setUid] = useState(localSnapshot?.uid || '');
+  const [clientToken, setClientToken] = useState(localSnapshot?.clientToken || '');
+  const [entryMode, setEntryMode] = useState<EntryMode>(localSnapshot ? 'restore' : 'landing');
   const [optimisticMessages, setOptimisticMessages] = useState<OptimisticMessage[]>([]);
   const [lastUserMessage, setLastUserMessage] = useState('');
-  const [inlineState, setInlineState] = useState(initialSnapshot ? '正在恢复上次体验会话...' : '尚未连接到体验会话。');
+  const [inlineState, setInlineState] = useState(localSnapshot ? '正在恢复上次体验会话...' : '请选择开始新体验，或找回你之前的角色。');
 
   const api = useMemo(() => createApiClient({
     baseUrl: config.controlPlaneBaseUrl,
@@ -69,16 +143,18 @@ export function AppShell() {
 
   const webDemo = useMemo(() => {
     if (!uid || !clientToken) return null;
-    const snapshotFallback = initialSnapshot?.uid === uid && initialSnapshot?.clientToken === clientToken
-      ? initialSnapshot.lastWebDemo
+    const snapshotFallback = localSnapshot?.uid === uid && localSnapshot?.clientToken === clientToken
+      ? localSnapshot.lastWebDemo
       : null;
     const current = sessionQuery.data?.webDemo || snapshotFallback || null;
     return mergeWebDemo(current, mediaTasksQuery.data?.tasks || null);
-  }, [clientToken, initialSnapshot?.clientToken, initialSnapshot?.lastWebDemo, initialSnapshot?.uid, mediaTasksQuery.data?.tasks, sessionQuery.data?.webDemo, uid]);
+  }, [clientToken, localSnapshot, mediaTasksQuery.data?.tasks, sessionQuery.data?.webDemo, uid]);
 
   useEffect(() => {
     if (uid && clientToken) {
-      saveSnapshot(uid, clientToken, webDemo);
+      const snapshot = nextSessionSnapshot(uid, clientToken, webDemo);
+      saveSnapshot(snapshot.uid, snapshot.clientToken, snapshot.lastWebDemo);
+      setLocalSnapshot(snapshot);
     }
   }, [clientToken, uid, webDemo]);
 
@@ -88,17 +164,46 @@ export function AppShell() {
     }
   }, [config.manualSchedulingWechat, config.paidContactEmail, sessionQuery.data, sessionQuery.isSuccess]);
 
+  const connectSession = async (nextUid: string, nextClientToken: string, nextData?: WebDemoSessionResponse | null, nextMessage?: string) => {
+    setUid(nextUid);
+    setClientToken(nextClientToken);
+    setOptimisticMessages([]);
+    setEntryMode('landing');
+    if (nextData) {
+      queryClient.setQueryData(['web-demo-session', nextUid, nextClientToken], nextData);
+      const snapshot = nextSessionSnapshot(nextUid, nextClientToken, nextData.webDemo || null);
+      saveSnapshot(snapshot.uid, snapshot.clientToken, snapshot.lastWebDemo);
+      setLocalSnapshot(snapshot);
+    }
+    setInlineState(nextMessage || '会话已恢复。');
+  };
+
   const applyMutation = useMutation({
     mutationFn: (payload: ApplyPayload) => api.apply(payload),
-    onSuccess: (data) => {
-      setUid(data.uid);
-      setClientToken(data.clientToken);
-      setInlineState('体验会话已建立。现在可以继续补充信息，或直接上传照片启动。');
-      queryClient.setQueryData(['web-demo-session', data.uid, data.clientToken], data);
+    onSuccess: async (data) => {
+      await connectSession(data.uid, data.clientToken, data as unknown as WebDemoSessionResponse, '体验会话已建立。当前先由建档代理收集信息，完成后会进入角色 live。');
     },
     onError: (error) => {
       const message = error instanceof Error ? error.message : 'create_failed';
       setInlineState(`创建失败：${message}`);
+    }
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async ({ uid: nextUid, clientToken: nextClientToken }: { uid: string; clientToken: string }) => {
+      const restoreApi = createApiClient({
+        baseUrl: config.controlPlaneBaseUrl,
+        uid: nextUid,
+        clientToken: nextClientToken
+      });
+      const data = await restoreApi.getSession();
+      return { ...data, clientToken: nextClientToken };
+    },
+    onSuccess: async (data) => {
+      await connectSession(data.uid, data.clientToken, data, '会话已恢复。若之前已经进入 live，现在会直接回到角色聊天。');
+    },
+    onError: (error) => {
+      setInlineState(`恢复失败：${error instanceof Error ? error.message : 'unknown_error'}`);
     }
   });
 
@@ -107,7 +212,7 @@ export function AppShell() {
     onSuccess: (data) => {
       setOptimisticMessages([]);
       queryClient.setQueryData(['web-demo-session', uid, clientToken], data);
-      setInlineState(data.reply?.chunks?.length ? '已收到回复。若需要图片、语音或视频，系统会继续在这里回填。' : '消息已处理。');
+      setInlineState(data.reply?.chunks?.length ? '已收到回复。若触发媒体任务，图片、语音、视频会继续回填到时间线。' : '消息已处理。');
     },
     onError: async (error) => {
       setOptimisticMessages([]);
@@ -145,9 +250,9 @@ export function AppShell() {
       queryClient.setQueryData(['web-demo-session', uid, clientToken], data);
       await queryClient.invalidateQueries({ queryKey: ['web-demo-media', uid, clientToken] });
       if (variables.kind === 'photo') {
-        setInlineState('参考图已接收。若文本信息已完整，系统会自动启动。');
+        setInlineState('参考图已接收。若文字信息已经够，系统会自动进入唤醒阶段。');
       } else {
-        setInlineState('音频已接收。后续生成语音会优先使用这段素材的音色。');
+        setInlineState('音频已接收。后续会优先使用这段素材的音色；若没有音频，也会按画像匹配默认声线。');
       }
     },
     onError: (error, variables) => {
@@ -155,7 +260,11 @@ export function AppShell() {
     }
   });
 
-  const disabledForChat = !uid || !clientToken || Boolean(webDemo?.paywallLocked);
+  const hasSession = Boolean(uid && clientToken);
+  const phase = webDemo?.phase || (hasSession ? 'discovery' : 'landing');
+  const currentPhaseMeta = phaseMeta(phase);
+  const disabledForChat = !uid || !clientToken || Boolean(webDemo?.paywallLocked) || phase === 'locking';
+  const hasLocalSnapshot = Boolean(localSnapshot?.uid && localSnapshot?.clientToken);
 
   const sendText = async (text: string) => {
     setLastUserMessage(text);
@@ -170,86 +279,189 @@ export function AppShell() {
     await sendMutation.mutateAsync(text);
   };
 
+  const resetLocalSession = () => {
+    setUid('');
+    setClientToken('');
+    setOptimisticMessages([]);
+    setEntryMode('landing');
+    clearSnapshot();
+    setLocalSnapshot(null);
+    queryClient.clear();
+    setInlineState('本地会话已清除。你可以重新创建体验，或手动找回旧角色。');
+  };
+
   return (
-    <main className="experience-app">
+    <main className={`experience-app experience-app--${phaseClassName(phase)}`}>
       <section className="experience-hero">
         <div>
           <p className="eyebrow">Amberify 珀存</p>
-          <h1>网页聊天工作台</h1>
-          <p className="hero-copy">这版体验以“媒体可靠性交付”为优先：只有图片、语音、视频真的可打开时，才会进入聊天时间线。</p>
+          <h1>网页体验工作台</h1>
+          <p className="hero-copy">这版界面明确区分三种状态：建档采集、角色唤醒、进入 live。建档阶段是代理在整理资料，live 阶段才是角色本人在交流。</p>
+        </div>
+        <div className="hero-actions">
+          <button type="button" className="ghost-btn" onClick={() => setEntryMode('new')} disabled={applyMutation.isPending || restoreMutation.isPending}>
+            开始新体验
+          </button>
+          <button type="button" className="ghost-btn" onClick={() => setEntryMode('restore')} disabled={applyMutation.isPending || restoreMutation.isPending}>
+            找回已有角色
+          </button>
         </div>
       </section>
 
-      <section className="experience-grid">
-        <aside className="side-panel">
-          <SessionBootstrap busy={applyMutation.isPending} onSubmit={async (payload) => { await applyMutation.mutateAsync(payload); }} />
-        </aside>
+      {!hasSession ? (
+        <section className="entry-layout">
+          <div className="entry-panel panel-card">
+            <p className="entry-kicker">体验入口</p>
+            <h2>{entryMode === 'restore' ? '找回已有角色' : entryMode === 'new' ? '开始一轮新的体验' : '先选择这次要做什么'}</h2>
+            <p className="panel-copy">当前版本先用访客恢复：同一设备可直接恢复本机会话；跨设备则用 <code>UID + clientToken</code> 找回。正式版再升级为账号体系。</p>
+            <div className="entry-choices">
+              <button type="button" className={`entry-choice${entryMode === 'new' ? ' is-active' : ''}`} onClick={() => setEntryMode('new')}>
+                <strong>开始新体验</strong>
+                <span>先创建一个角色体验，再上传照片或音频。</span>
+              </button>
+              <button type="button" className={`entry-choice${entryMode === 'restore' ? ' is-active' : ''}`} onClick={() => setEntryMode('restore')}>
+                <strong>找回已有角色</strong>
+                <span>恢复你上次已经建好的角色，不必重新采集。</span>
+              </button>
+            </div>
+            {hasLocalSnapshot ? <p className="entry-footnote">本机检测到上次体验缓存，可直接恢复。</p> : null}
+          </div>
 
-        <section className="chat-panel">
-          <StatusBar uid={uid} webDemo={webDemo} />
-          <div className="panel-card panel-card--hint">{inlineState}</div>
-          <UploadTray
-            disabled={!uid || !clientToken || uploadMutation.isPending}
-            onInlineState={setInlineState}
-            onPhotoUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'photo', file }); }}
-            onAudioUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'audio', file }); }}
-          />
-          <div className="timeline-shell">
-            <ChatTimeline
-              webDemo={webDemo}
-              optimisticMessages={optimisticMessages}
-              uid={uid}
-              clientToken={clientToken}
-              inlineState={inlineState}
-              onRetryTask={(taskId) => retryMutation.mutate(taskId)}
-              retryDisabled={retryMutation.isPending}
-            />
+          <div className="entry-panel entry-panel--form">
+            {entryMode === 'restore' ? (
+              <RestoreSessionPanel
+                busy={restoreMutation.isPending}
+                hasLocalSnapshot={hasLocalSnapshot}
+                onRestore={async (nextUid, nextClientToken) => {
+                  await restoreMutation.mutateAsync({ uid: nextUid, clientToken: nextClientToken });
+                }}
+                onUseLocalSnapshot={async () => {
+                  if (!localSnapshot) return;
+                  await restoreMutation.mutateAsync({ uid: localSnapshot.uid, clientToken: localSnapshot.clientToken });
+                }}
+              />
+            ) : (
+              <SessionBootstrap
+                busy={applyMutation.isPending}
+                onSubmit={async (payload) => {
+                  await applyMutation.mutateAsync(payload);
+                }}
+              />
+            )}
+            <div className="panel-card panel-card--hint">{inlineState}</div>
           </div>
-          <Composer
-            disabled={disabledForChat}
-            busy={sendMutation.isPending}
-            onSend={sendText}
-            onReuseLast={async () => {
-              if (!lastUserMessage) return;
-              await sendText(lastUserMessage);
-            }}
-          />
-          <div className="toolbar-row">
-            <button
-              type="button"
-              className="ghost-btn"
-              disabled={!uid || !clientToken}
-              onClick={async () => {
-                await queryClient.invalidateQueries({ queryKey: ['web-demo-session', uid, clientToken] });
-                await queryClient.invalidateQueries({ queryKey: ['web-demo-media', uid, clientToken] });
-                setInlineState('同步完成。');
-              }}
-            >
-              手动同步
-            </button>
-            <button
-              type="button"
-              className="ghost-btn"
-              onClick={() => {
-                setUid('');
-                setClientToken('');
-                setOptimisticMessages([]);
-                clearSnapshot();
-                queryClient.clear();
-                setInlineState('本地会话已清除。你可以重新创建一轮体验。');
-              }}
-            >
-              清除本地会话
-            </button>
-          </div>
-          <PaywallPanel
-            visible={Boolean(webDemo?.paywallLocked)}
-            wechat={config.manualSchedulingWechat}
-            qq={config.manualSchedulingQq}
-            email={config.paidContactEmail}
-          />
         </section>
-      </section>
+      ) : (
+        <section className={`experience-grid${phase === 'live' ? ' experience-grid--live' : ''}`}>
+          <aside className="side-panel side-panel--stack">
+            <section className="phase-card panel-card">
+              <p className="entry-kicker">当前阶段</p>
+              <h2>{currentPhaseMeta.title}</h2>
+              <p className="panel-copy">{currentPhaseMeta.summary}</p>
+              <ul className="phase-checklist">
+                {currentPhaseMeta.checklist.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </section>
+            <SessionAccessCard uid={uid} clientToken={clientToken} />
+            <div className="toolbar-row toolbar-row--stack">
+              <button type="button" className="ghost-btn" onClick={resetLocalSession}>
+                新建 / 找回其他角色
+              </button>
+            </div>
+          </aside>
+
+          <section className="chat-panel">
+            <StatusBar uid={uid} webDemo={webDemo} />
+            <div className={`panel-card panel-card--hint panel-card--phase-${phaseClassName(phase)}`}>
+              {inlineState}
+            </div>
+            <UploadTray
+              disabled={!uid || !clientToken || uploadMutation.isPending}
+              onInlineState={setInlineState}
+              onPhotoUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'photo', file }); }}
+              onAudioUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'audio', file }); }}
+            />
+            {phase === 'live' ? (
+              <div className="live-workspace">
+                <div className="timeline-shell timeline-shell--assistant">
+                  <LiveChatThread
+                    key={`${uid}:${clientToken}`}
+                    baseUrl={config.controlPlaneBaseUrl}
+                    uid={uid}
+                    clientToken={clientToken}
+                    webDemo={webDemo}
+                    onInlineState={setInlineState}
+                    onSessionUpdate={(data) => {
+                      queryClient.setQueryData(['web-demo-session', uid, clientToken], data);
+                      void queryClient.invalidateQueries({ queryKey: ['web-demo-media', uid, clientToken] });
+                    }}
+                  />
+                </div>
+                <MediaTaskFeed
+                  tasks={webDemo?.pendingMediaTasks || []}
+                  uid={uid}
+                  clientToken={clientToken}
+                  onRetryTask={(taskId) => retryMutation.mutate(taskId)}
+                  retryDisabled={retryMutation.isPending}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="timeline-shell">
+                  <ChatTimeline
+                    webDemo={webDemo}
+                    optimisticMessages={optimisticMessages}
+                    uid={uid}
+                    clientToken={clientToken}
+                    inlineState={inlineState}
+                    onRetryTask={(taskId) => retryMutation.mutate(taskId)}
+                    retryDisabled={retryMutation.isPending}
+                  />
+                </div>
+                <Composer
+                  disabled={disabledForChat}
+                  busy={sendMutation.isPending}
+                  phase={phase}
+                  onSend={sendText}
+                  onReuseLast={async () => {
+                    if (!lastUserMessage) return;
+                    await sendText(lastUserMessage);
+                  }}
+                />
+              </>
+            )}
+            <div className="toolbar-row">
+              <button
+                type="button"
+                className="ghost-btn"
+                disabled={!uid || !clientToken}
+                onClick={async () => {
+                  await queryClient.invalidateQueries({ queryKey: ['web-demo-session', uid, clientToken] });
+                  await queryClient.invalidateQueries({ queryKey: ['web-demo-media', uid, clientToken] });
+                  setInlineState('同步完成。');
+                }}
+              >
+                手动同步
+              </button>
+              <button
+                type="button"
+                className="ghost-btn"
+                onClick={resetLocalSession}
+              >
+                清除本地会话
+              </button>
+            </div>
+            <PaywallPanel
+              visible={Boolean(webDemo?.paywallLocked)}
+              wechat={config.manualSchedulingWechat}
+              qq={config.manualSchedulingQq}
+              email={config.paidContactEmail}
+            />
+          </section>
+        </section>
+      )}
     </main>
   );
 }

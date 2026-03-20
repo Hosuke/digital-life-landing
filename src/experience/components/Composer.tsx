@@ -1,14 +1,24 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface ComposerProps {
   disabled: boolean;
   busy: boolean;
+  phase: string;
   onSend: (text: string) => Promise<void>;
   onReuseLast: () => Promise<void>;
 }
 
-export function Composer({ disabled, busy, onSend, onReuseLast }: ComposerProps) {
+function placeholderByPhase(phase = ''): string {
+  const value = String(phase || '').trim();
+  if (value === 'live') return '现在已经进入 live。像平时聊天一样说话，或直接让 TA 发照片、语音、视频。';
+  if (value === 'locking') return '角色正在唤醒，暂时不用继续输入。';
+  if (value === 'asset_intake') return '继续自然补充也可以，但现在最关键的是上传一张正面照。';
+  return '先像聊天一样描述 TA：TA 是谁、怎么说话、你们之间最想保留的记忆。';
+}
+
+export function Composer({ disabled, busy, phase, onSend, onReuseLast }: ComposerProps) {
   const [text, setText] = useState('');
+  const placeholder = useMemo(() => placeholderByPhase(phase), [phase]);
 
   const submit = async () => {
     const value = text.trim();
@@ -18,7 +28,7 @@ export function Composer({ disabled, busy, onSend, onReuseLast }: ComposerProps)
   };
 
   return (
-    <div className="composer-shell">
+    <div className={`composer-shell composer-shell--${String(phase || 'idle').replace(/[^a-z_\-]/gi, '') || 'idle'}`}>
       <textarea
         value={text}
         onChange={(event) => setText(event.target.value)}
@@ -28,7 +38,7 @@ export function Composer({ disabled, busy, onSend, onReuseLast }: ComposerProps)
             void submit();
           }
         }}
-        placeholder="像平时聊天一样告诉我：TA 是谁、TA 怎么说话、你们最想留下什么记忆。"
+        placeholder={placeholder}
         disabled={disabled}
       />
       <div className="composer-actions">
