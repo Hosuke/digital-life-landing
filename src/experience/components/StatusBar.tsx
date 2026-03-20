@@ -24,7 +24,7 @@ export function StatusBar({ uid, webDemo }: StatusBarProps) {
     <div className="status-bar">
       <div className="status-bar__item">
         <span className="status-bar__label">UID</span>
-        <code className="status-bar__value status-bar__value--uid">{uid ? uid.slice(0, 12) + '...' : '--'}</code>
+        <code className="status-bar__value status-bar__value--uid" title={uid || ''}>{uid || '--'}</code>
       </div>
       <div className="status-bar__item">
         <span className="status-bar__label">阶段</span>

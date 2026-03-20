@@ -278,8 +278,11 @@ button, input, textarea { font: inherit; }
 .status-bar__value--uid {
   color: var(--phase, var(--accent));
   font-family: "SFMono-Regular", "JetBrains Mono", monospace;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 400;
+  word-break: break-all;
+  user-select: all;
+  cursor: text;
 }
 
 /* ============================================================
