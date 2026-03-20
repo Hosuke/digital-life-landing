@@ -539,17 +539,26 @@
         </div>
     </section>
 
-    <script src="config.local.js"></script>
     <script>
         (function () {
             const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
-            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://api.amberify.me';
+            if (localHosts.has(window.location.hostname)) {
+                document.write('<script src="config.local.js"><\\/script>');
+            }
+        })();
+    </script>
+    <script>
+        (function () {
+            const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+            const isLocal = localHosts.has(window.location.hostname);
+            const defaultBaseUrl = isLocal ? 'http://localhost:8787' : 'https://api.amberify.me';
+            const existingConfig = isLocal ? (window.DIGITAL_LIFE_CONFIG || {}) : {};
             window.DIGITAL_LIFE_CONFIG = Object.assign({
                 controlPlaneBaseUrl: defaultBaseUrl,
                 manualSchedulingWechat: 'q517754526',
                 manualSchedulingQq: '517754526',
                 paidContactEmail: 'sukebeta@outlook.com'
-            }, window.DIGITAL_LIFE_CONFIG || {});
+            }, existingConfig);
         })();
     </script>
     <script src="experience.js"></script>
