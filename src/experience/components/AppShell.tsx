@@ -13,8 +13,6 @@ import type {
 } from '../lib/types';
 import { ChatTimeline } from './ChatTimeline';
 import { Composer } from './Composer';
-import { LiveChatThread } from './LiveChatThread';
-import { MediaTaskFeed } from './MediaTaskFeed';
 import { PaywallPanel } from './PaywallPanel';
 import { RestoreSessionPanel } from './RestoreSessionPanel';
 import { SessionAccessCard } from './SessionAccessCard';
@@ -352,7 +350,7 @@ export function AppShell() {
           </div>
         </section>
       ) : (
-        <section className={`experience-grid${phase === 'live' ? ' experience-grid--live' : ''}`}>
+        <section className="experience-grid">
           <aside className="side-panel side-panel--stack">
             <section className="phase-card panel-card">
               <p className="entry-kicker">当前阶段</p>
@@ -383,55 +381,27 @@ export function AppShell() {
               onPhotoUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'photo', file }); }}
               onAudioUpload={async (file) => { await uploadMutation.mutateAsync({ kind: 'audio', file }); }}
             />
-            {phase === 'live' ? (
-              <div className="live-workspace">
-                <div className="timeline-shell timeline-shell--assistant">
-                  <LiveChatThread
-                    key={`${uid}:${clientToken}`}
-                    baseUrl={config.controlPlaneBaseUrl}
-                    uid={uid}
-                    clientToken={clientToken}
-                    webDemo={webDemo}
-                    onInlineState={setInlineState}
-                    onSessionUpdate={(data) => {
-                      queryClient.setQueryData(['web-demo-session', uid, clientToken], data);
-                      void queryClient.invalidateQueries({ queryKey: ['web-demo-media', uid, clientToken] });
-                    }}
-                  />
-                </div>
-                <MediaTaskFeed
-                  tasks={webDemo?.pendingMediaTasks || []}
-                  uid={uid}
-                  clientToken={clientToken}
-                  onRetryTask={(taskId) => retryMutation.mutate(taskId)}
-                  retryDisabled={retryMutation.isPending}
-                />
-              </div>
-            ) : (
-              <>
-                <div className="timeline-shell">
-                  <ChatTimeline
-                    webDemo={webDemo}
-                    optimisticMessages={optimisticMessages}
-                    uid={uid}
-                    clientToken={clientToken}
-                    inlineState={inlineState}
-                    onRetryTask={(taskId) => retryMutation.mutate(taskId)}
-                    retryDisabled={retryMutation.isPending}
-                  />
-                </div>
-                <Composer
-                  disabled={disabledForChat}
-                  busy={sendMutation.isPending}
-                  phase={phase}
-                  onSend={sendText}
-                  onReuseLast={async () => {
-                    if (!lastUserMessage) return;
-                    await sendText(lastUserMessage);
-                  }}
-                />
-              </>
-            )}
+            <div className="timeline-shell">
+              <ChatTimeline
+                webDemo={webDemo}
+                optimisticMessages={optimisticMessages}
+                uid={uid}
+                clientToken={clientToken}
+                inlineState={inlineState}
+                onRetryTask={(taskId) => retryMutation.mutate(taskId)}
+                retryDisabled={retryMutation.isPending}
+              />
+            </div>
+            <Composer
+              disabled={disabledForChat}
+              busy={sendMutation.isPending}
+              phase={phase}
+              onSend={sendText}
+              onReuseLast={async () => {
+                if (!lastUserMessage) return;
+                await sendText(lastUserMessage);
+              }}
+            />
             <div className="toolbar-row">
               <button
                 type="button"
