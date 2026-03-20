@@ -515,41 +515,61 @@ button, input, textarea { font: inherit; }
    Paywall
    ============================================================ */
 .paywall {
-  padding: 16px;
-  background: var(--panel);
-  border: 1px solid var(--danger);
+  padding: 24px 20px;
+  background: linear-gradient(145deg, rgba(40, 12, 12, 0.6), var(--panel));
+  border: 1px solid rgba(255, 142, 142, 0.25);
   border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.paywall__icon {
+  font-size: 2rem;
+  margin-bottom: 8px;
+  opacity: 0.7;
 }
 
 .paywall__title {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--danger);
 }
 
 .paywall__text {
-  margin: 0 0 14px;
+  margin: 0 0 18px;
   color: var(--muted);
-  line-height: 1.7;
+  font-size: 0.88rem;
+  line-height: 1.8;
 }
 
 .paywall__contacts {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 
 .paywall__contact {
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.03);
+  text-align: left;
 }
 
 .paywall__label {
-  display: block;
-  margin-bottom: 4px;
+  flex-shrink: 0;
+  width: 36px;
   color: var(--muted);
   font-size: 0.75rem;
+}
+
+.paywall__value {
+  font-weight: 600;
+  font-size: 0.9rem;
+  word-break: break-all;
 }
 
 /* ============================================================
@@ -595,9 +615,5 @@ button, input, textarea { font: inherit; }
   .chat-shell {
     max-height: none;
     min-height: 360px;
-  }
-
-  .paywall__contacts {
-    grid-template-columns: 1fr;
   }
 }
