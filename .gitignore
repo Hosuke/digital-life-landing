@@ -18,3 +18,4 @@ config.local.js
 bot/data/
 control-plane/data/db.json
 control-plane/data/channel-pool.json
+ppt/*.pptx

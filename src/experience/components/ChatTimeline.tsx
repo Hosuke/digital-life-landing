@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import type { MediaTaskView, OptimisticMessage, RecentMessage, WebDemoView } from '../lib/types';
 import { MediaCard } from './MediaCard';
 import { MessageBubble } from './MessageBubble';
@@ -7,30 +8,33 @@ interface ChatTimelineProps {
   optimisticMessages: OptimisticMessage[];
   uid: string;
   clientToken: string;
-  inlineState: string;
   onRetryTask: (taskId: string) => void;
   retryDisabled?: boolean;
+  isSending?: boolean;
 }
 
 type TimelineItem =
   | { kind: 'message'; sortAt: number; key: string; payload: RecentMessage | OptimisticMessage }
   | { kind: 'task'; sortAt: number; key: string; payload: MediaTaskView };
 
-function formatMessageMeta(message: RecentMessage | OptimisticMessage): string[] {
+function formatTime(at: string | null): string {
+  if (!at) return '';
+  const ts = Date.parse(String(at));
+  if (!Number.isFinite(ts)) return '';
+  return new Date(ts).toLocaleString('zh-CN', {
+    hour12: false,
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function messageMeta(message: RecentMessage | OptimisticMessage): string[] {
   const parts: string[] = [];
-  if ('intent' in message && message.intent) parts.push(message.intent);
-  if ('location' in message && message.location) parts.push(message.location);
   if ('pending' in message && message.pending) parts.push('发送中');
-  const timestamp = Date.parse(String(message.at || ''));
-  if (Number.isFinite(timestamp)) {
-    parts.push(new Date(timestamp).toLocaleString('zh-CN', {
-      hour12: false,
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }));
-  }
+  const time = formatTime(message.at);
+  if (time) parts.push(time);
   return parts;
 }
 
@@ -39,10 +43,12 @@ export function ChatTimeline({
   optimisticMessages,
   uid,
   clientToken,
-  inlineState,
   onRetryTask,
-  retryDisabled = false
+  retryDisabled = false,
+  isSending = false
 }: ChatTimelineProps) {
+  const bottomRef = useRef<HTMLDivElement>(null);
+
   const timeline: TimelineItem[] = [];
   const messages = webDemo?.recentMessages || [];
   const tasks = webDemo?.pendingMediaTasks || [];
@@ -55,6 +61,7 @@ export function ChatTimeline({
       payload: message
     });
   });
+
   optimisticMessages.forEach((message, index) => {
     timeline.push({
       kind: 'message',
@@ -63,6 +70,7 @@ export function ChatTimeline({
       payload: message
     });
   });
+
   tasks.forEach((task, index) => {
     timeline.push({
       kind: 'task',
@@ -71,24 +79,30 @@ export function ChatTimeline({
       payload: task
     });
   });
+
   timeline.sort((a, b) => a.sortAt - b.sortAt);
 
-  if (!timeline.length) {
+  // Auto-scroll to bottom when new items arrive
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [timeline.length, isSending]);
+
+  if (!timeline.length && !isSending) {
     return (
-      <div className="timeline-empty">
-        <div className="timeline-empty__title">这里会显示建档、聊天、图片、语音和视频回传。</div>
-        <div className="timeline-empty__subtitle">{inlineState}</div>
+      <div className="tl-empty">
+        <div className="tl-empty__title">还没有消息</div>
+        <div className="tl-empty__sub">创建会话后，对话内容会显示在这里。</div>
       </div>
     );
   }
 
   return (
-    <div className="timeline-list">
+    <div className="tl-list">
       {timeline.map((item) => {
         if (item.kind === 'task') {
           return (
-            <div className="timeline-row timeline-row--system" key={item.key}>
-              <div className="timeline-bubble">
+            <div className="tl-row tl-row--system" key={item.key}>
+              <div className="tl-bubble">
                 <MediaCard
                   task={item.payload}
                   uid={uid}
@@ -100,17 +114,27 @@ export function ChatTimeline({
             </div>
           );
         }
-        const role = String(item.payload.role || 'assistant') === 'user' ? 'user' : 'assistant';
+        const role = String(item.payload.role || 'assistant') === 'user' ? 'user' as const : 'assistant' as const;
         return (
           <MessageBubble
             key={item.key}
             role={role}
             text={item.payload.text}
-            meta={formatMessageMeta(item.payload)}
+            meta={messageMeta(item.payload)}
             pending={'pending' in item.payload ? item.payload.pending : false}
           />
         );
       })}
+      {isSending && (
+        <div className="tl-row tl-row--assistant">
+          <div className="tl-bubble tl-bubble--typing">
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+            <span className="typing-dot" />
+          </div>
+        </div>
+      )}
+      <div ref={bottomRef} />
     </div>
   );
 }

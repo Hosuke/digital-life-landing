@@ -14,36 +14,64 @@ export interface ApiClientOptions {
 
 export class ApiError extends Error {
   status: number;
-  payload: any;
+  payload: unknown;
 
-  constructor(message: string, status: number, payload: any) {
+  constructor(message: string, status: number, payload: unknown) {
     super(message);
     this.status = status;
     this.payload = payload;
   }
 }
 
+const REQUEST_TIMEOUT_MS = 45_000;
+
 function withTokenHeaders(clientToken?: string): HeadersInit {
   return clientToken ? { 'x-web-demo-token': clientToken } : {};
 }
 
-async function parseJson(response: Response): Promise<any> {
+async function parseJson(response: Response): Promise<Record<string, unknown>> {
   const text = await response.text();
   if (!text) return {};
   try {
-    return JSON.parse(text);
+    return JSON.parse(text) as Record<string, unknown>;
   } catch {
     return {};
   }
 }
 
 async function request<T>(baseUrl: string, path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${baseUrl}${path}`, init);
-  const payload = await parseJson(response);
-  if (!response.ok) {
-    throw new ApiError(payload.error || `request_failed:${response.status}`, response.status, payload);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  // Merge signals: if caller already has one, chain them
+  const existingSignal = init.signal;
+  if (existingSignal) {
+    existingSignal.addEventListener('abort', () => controller.abort());
   }
-  return payload as T;
+
+  try {
+    const response = await fetch(`${baseUrl}${path}`, {
+      ...init,
+      signal: controller.signal
+    });
+    const payload = await parseJson(response);
+    if (!response.ok) {
+      throw new ApiError(
+        (payload.error as string) || `request_failed:${response.status}`,
+        response.status,
+        payload
+      );
+    }
+    return payload as T;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new ApiError('请求超时，请重试', 0, null);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function createApiClient(options: ApiClientOptions) {
