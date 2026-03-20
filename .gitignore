@@ -1,4 +1,6 @@
 # Node.js dependencies
+node_modules/
+dist/
 bot/node_modules/
 control-plane/node_modules/
 bot/npm-debug.log*
