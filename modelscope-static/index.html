@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>珀存 Amberify - ModelScope 体验版</title>
-  <meta name="description" content="Amberify 珀存 ModelScope 静态体验页。体验版提交后进入 QQ 建档；付费版提交后通过邮件联系人工排期。">
+  <meta name="description" content="Amberify 珀存 ModelScope 静态体验页。体验版提交后进入网页工作台；付费版提交后通过邮件联系人工排期。">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -43,7 +43,7 @@
       <div class="glass-card fade-in">
         <div class="icon-badge">文</div>
         <h3>文字对话</h3>
-        <p>TA 会像在微信或 QQ 里那样和你说话，记得你们之间的关系、记忆和说话方式。</p>
+        <p>TA 会先在网页工作台里和你说话，记得你们之间的关系、记忆和说话方式。</p>
       </div>
       <div class="glass-card fade-in" style="transition-delay:0.15s;">
         <div class="icon-badge">图</div>
@@ -67,10 +67,10 @@
     <h2 class="section-title">ModelScope 展示版如何体验</h2>
     <div class="glass-panel fade-in" style="max-width: 1100px; margin: 0 auto; padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
       <div style="flex: 1; min-width: 300px; text-align: left;">
-        <div class="summary-chip">推荐路径：网页提交 → QQ 建档 → 继续发图 / 语音</div>
+        <div class="summary-chip">推荐路径：网页提交 → 网页建档 → 继续发图 / 语音</div>
         <p style="color: var(--text-gray); font-size: 1.05rem; line-height: 1.9; margin: 24px 0;">
           这个页面本身是静态展示页，不在 ModelScope 内直接跑后端。
-          体验版提交后，会进入你的 QQ 私聊机器人继续建档；付费版提交后，则直接生成一封邮件草稿，发到 <strong>sukebeta@outlook.com</strong>，用于人工排期。
+          体验版提交后，会引导你进入网页工作台继续建档；付费版提交后，则直接生成一封邮件草稿，发到 <strong>sukebeta@outlook.com</strong>，用于人工排期。
         </p>
         <div class="req-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
           <div class="req-item">
@@ -80,8 +80,8 @@
           </div>
           <div class="req-item">
             <div class="icon-badge">2</div>
-            <h4>QQ 继续建档</h4>
-            <p>体验版会引导你去 QQ 继续补照片和语音，并生成这只数字生命的专属 skill 包。</p>
+            <h4>网页继续建档</h4>
+            <p>体验版会引导你在网页工作台继续补照片和语音，并生成这只数字生命的专属体验档案。</p>
           </div>
           <div class="req-item">
             <div class="icon-badge">3</div>
@@ -93,7 +93,7 @@
       <div style="flex: 0 0 auto; margin: 0 auto;">
         <div style="border: 2px solid rgba(0, 243, 255, 0.4); border-radius: 20px; overflow: hidden; box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); width: 260px; position: relative;">
           <video src="demo_1_432x960.mp4" autoplay loop muted playsinline controls style="width: 100%; display: block; filter: brightness(0.9);"></video>
-          <div style="position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.72); font-size: 0.8rem; pointer-events: none;">静态页只做入口，真实体验在 QQ</div>
+          <div style="position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.72); font-size: 0.8rem; pointer-events: none;">静态页只做入口，真实体验在网页工作台</div>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@
 
   <section id="apply" class="section">
     <h2 class="section-title">提交申请</h2>
-    <p class="form-desc fade-in">体验版会继续进入 QQ 建档；付费版会直接整理成邮件草稿，发往 <strong>sukebeta@outlook.com</strong> 进行人工排期。</p>
+    <p class="form-desc fade-in">体验版会继续进入网页工作台建档；付费版会直接整理成邮件草稿，发往 <strong>sukebeta@outlook.com</strong> 进行人工排期。</p>
 
     <form class="apply-form glass-panel fade-in" id="applyForm">
       <div class="form-group plan-selection">
@@ -111,7 +111,7 @@
             <input type="radio" name="planType" value="trial" checked>
             <div class="plan-content">
               <h4>体验版</h4>
-              <p>提交后进入 QQ 建档，再补照片与语音</p>
+              <p>提交后进入网页工作台，再补照片与语音</p>
               <span class="price">免费体验</span>
             </div>
           </label>
@@ -139,11 +139,6 @@
       <div class="form-group">
         <label for="relation">你和 TA 的关系</label>
         <input type="text" id="relation" required placeholder="例如：弟弟 / 妈妈 / 朋友 / 爱人">
-      </div>
-
-      <div class="form-group trial-only">
-        <label for="qqNumber">体验绑定 QQ 号</label>
-        <input type="text" id="qqNumber" placeholder="体验版建议填写你的 QQ 号，用于进入 QQ 建档">
       </div>
 
       <div class="form-group">
@@ -184,7 +179,7 @@
       <button type="submit" class="submit-btn" id="submitBtn">
         <span class="btn-text" id="submitBtnText">提交并开始体验</span>
       </button>
-      <p class="form-note">体验版会继续跳转 QQ 建档；付费版会拉起邮件客户端，收件人固定为 <strong>sukebeta@outlook.com</strong>。</p>
+      <p class="form-note">体验版会继续进入网页工作台；付费版会拉起邮件客户端，收件人固定为 <strong>sukebeta@outlook.com</strong>。</p>
     </form>
   </section>
 
@@ -205,9 +200,6 @@
   <script>
     window.MODELSCOPE_STATIC_CONFIG = {
       controlPlaneBaseUrl: 'https://qqbot.qungan.com',
-      preferredChannel: 'qq',
-      qqBotName: '珀存QQBot',
-      qqBotUin: '',
       paidContactEmail: 'sukebeta@outlook.com',
       manualSchedulingWechat: 'q517754526',
       manualSchedulingQq: '517754526'

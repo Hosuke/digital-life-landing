@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>珀存 Amberify - 网页体验版</title>
+    <meta name="description" content="Amberify 珀存网页体验版。用户可在网页内完成建档、上传、聊天体验，并在体验结束后进入付费提示。">
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Orbitron:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .lang-switch {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 15px;
+        }
+
+        .lang-switch a {
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            padding: 5px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .lang-switch a.active {
+            color: var(--cyan);
+            border-color: var(--cyan);
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .lang-switch a:hover {
+            color: var(--cyan);
+            border-color: var(--cyan);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 380px minmax(0, 1fr);
+            gap: 28px;
+            align-items: start;
+        }
+
+        .workspace-panel {
+            padding: 28px;
+        }
+
+        .status-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 18px 0 22px;
+        }
+
+        .status-chip {
+            padding: 8px 12px;
+            border: 1px solid rgba(0, 243, 255, 0.24);
+            border-radius: 999px;
+            background: rgba(0, 243, 255, 0.08);
+            color: var(--white);
+            font-size: 0.85rem;
+        }
+
+        .workspace-note {
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 0.88rem;
+            line-height: 1.7;
+        }
+
+        .session-card {
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 18px;
+            margin-bottom: 18px;
+        }
+
+        .session-card h3 {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .uid-box {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            background: rgba(0, 0, 0, 0.28);
+            color: var(--cyan);
+            font-family: "Orbitron", sans-serif;
+            font-size: 0.88rem;
+            letter-spacing: 1px;
+            word-break: break-all;
+        }
+
+        .hint-list {
+            display: grid;
+            gap: 8px;
+            margin-top: 14px;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.93rem;
+            line-height: 1.7;
+        }
+
+        .upload-actions,
+        .composer-row,
+        .record-row,
+        .chat-toolbar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .mini-btn,
+        .ghost-btn {
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 243, 255, 0.22);
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--white);
+            cursor: pointer;
+            transition: 0.25s ease;
+        }
+
+        .ghost-btn {
+            background: transparent;
+        }
+
+        .mini-btn:hover,
+        .ghost-btn:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .mini-btn:disabled,
+        .ghost-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .hidden-file {
+            display: none;
+        }
+
+        .chat-shell {
+            display: grid;
+            gap: 16px;
+        }
+
+        .chat-box {
+            min-height: 520px;
+            max-height: 68vh;
+            overflow-y: auto;
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(0, 243, 255, 0.16);
+            background:
+                linear-gradient(180deg, rgba(0, 0, 0, 0.24), rgba(0, 0, 0, 0.38)),
+                radial-gradient(circle at top, rgba(0, 243, 255, 0.08), transparent 38%);
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.assistant,
+        .message.system {
+            justify-content: flex-start;
+        }
+
+        .bubble {
+            max-width: min(88%, 680px);
+            padding: 14px 16px;
+            border-radius: 18px;
+            line-height: 1.75;
+            font-size: 0.97rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+            position: relative;
+        }
+
+        .message.user .bubble {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.22), rgba(0, 243, 255, 0.1));
+            border: 1px solid rgba(0, 243, 255, 0.28);
+        }
+
+        .message.assistant .bubble {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .message.system .bubble {
+            background: rgba(255, 193, 7, 0.08);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+        }
+
+        .bubble-meta {
+            display: block;
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.75rem;
+            letter-spacing: 0.4px;
+        }
+
+        .media-card {
+            margin-top: 12px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 243, 255, 0.16);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .media-card img,
+        .media-card video,
+        .media-card audio {
+            display: block;
+            width: 100%;
+        }
+
+        .media-label {
+            padding: 10px 12px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 0.84rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .composer {
+            display: grid;
+            gap: 10px;
+        }
+
+        .composer textarea {
+            min-height: 104px;
+            resize: vertical;
+        }
+
+        .inline-state {
+            min-height: 22px;
+            color: rgba(255, 255, 255, 0.64);
+            font-size: 0.88rem;
+        }
+
+        .paywall-banner {
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 193, 7, 0.28);
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.1), rgba(255, 111, 0, 0.08));
+        }
+
+        .paywall-banner h3 {
+            margin-bottom: 10px;
+            color: #ffd46b;
+        }
+
+        .paywall-banner p,
+        .paywall-banner li {
+            color: rgba(255, 255, 255, 0.88);
+            line-height: 1.8;
+        }
+
+        .paywall-banner ol {
+            margin: 12px 0 0 20px;
+        }
+
+        @media (max-width: 1040px) {
+            .workspace-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 680px) {
+            .workspace-panel {
+                padding: 20px;
+            }
+
+            .chat-box {
+                min-height: 420px;
+                max-height: 60vh;
+            }
+
+            .bubble {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="particleCanvas"></canvas>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon"><i class="fa-solid fa-infinity"></i></span>
+            <span class="logo-text">珀<span class="highlight">存</span></span>
+        </div>
+        <div class="menu">
+            <a href="#about">体验说明</a>
+            <a href="#workspace">开始体验</a>
+            <a href="index.html" class="nav-btn">返回官网</a>
+            <div class="lang-switch">
+                <a href="experience.html" class="active">中文</a>
+                <a href="index.en.html">EN</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1 class="glitch" data-text="珀存 Amberify">珀存 Amberify</h1>
+            <p class="subtitle">先在网页里把 TA 建起来，再进入一段有限但完整的试用体验。</p>
+            <div class="quote-box">
+                <p class="quote">“不是复活，不是冒充。是让 TA 在数字的一半里继续生活。”</p>
+                <p class="author">— 珀存 Amberify</p>
+            </div>
+            <div class="hero-actions">
+                <a href="#workspace" class="cta-btn">开始网页体验</a>
+                <a href="index.html" class="secondary-btn">返回首页</a>
+            </div>
+            <p class="workspace-note">网页体验版会在浏览器内完成建档、上传、对话与多模态回传；达到试用上限后会进入人工付费引导。</p>
+        </div>
+    </header>
+
+    <section id="about" class="section">
+        <div class="glass-panel fade-in"
+            style="max-width: 1100px; margin: 0 auto; padding: 40px; display: flex; flex-wrap: wrap; gap: 40px; align-items: center;">
+            <div style="flex: 1; min-width: 300px; text-align: left;">
+                <h2 class="section-title" style="margin-bottom: 20px; text-align: left;">这版体验会发生什么</h2>
+                <p style="color: var(--text-gray); font-size: 1.08rem; line-height: 1.9; margin-bottom: 26px;">
+                    这不是一张静态海报，而是珀存的网页体验工作台。
+                    你会先用自然语言把 TA 描述出来，然后补一张正面照；如果有语音，我们会更贴近 TA 的声线，
+                    如果没有，也会先按画像匹配默认声线启动。进入 live 后，系统会在同一条连续时间线里与你对话，并回传图片、语音或视频结果。
+                </p>
+                <div class="req-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div class="req-item">
+                        <i class="fa-solid fa-comments"></i>
+                        <h4>自然建档</h4>
+                        <p>不用背术语，不用填 role / soul 这种行话。你像平时聊天一样说，我们来整理。</p>
+                    </div>
+                    <div class="req-item">
+                        <i class="fa-solid fa-camera-retro"></i>
+                        <h4>补图即启动</h4>
+                        <p>一张正面照是最小必需条件。上传后，系统会自动判断是否可以启动这只数字生命。</p>
+                    </div>
+                    <div class="req-item">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                        <h4>音频可选</h4>
+                        <p>有语音会更像 TA；没有也不会卡住，我们会先用默认声线完成体验版。</p>
+                    </div>
+                    <div class="req-item">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                        <h4>30 次试用窗口</h4>
+                        <p>进入 live 后，你有 30 次用户发言额度。到达上限后，页面会切到人工续费引导。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="flex: 0 0 auto; margin: 0 auto;">
+                <div
+                    style="border: 2px solid rgba(0, 243, 255, 0.4); border-radius: 20px; overflow: hidden; box-shadow: 0 0 25px rgba(0, 243, 255, 0.2); width: 260px; position: relative;">
+                    <video src="demo_1_432x960.mp4" autoplay loop muted playsinline controls
+                        style="width: 100%; display: block; filter: brightness(0.9);"></video>
+                    <div
+                        style="position: absolute; bottom: 15px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.72); font-size: 0.8rem; pointer-events: none;">
+                        <i class="fa-solid fa-mobile-screen" style="margin-right: 5px;"></i>网页工作台体验
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="workspace" class="section">
+        <h2 class="section-title">体验工作台</h2>
+        <div class="workspace-grid fade-in" style="max-width: 1240px; margin: 0 auto;">
+            <div class="glass-panel workspace-panel">
+                <div class="session-card">
+                    <h3>1. 先建立这次体验</h3>
+                    <form id="applyForm" class="apply-form" style="padding: 0; background: transparent; border: 0; box-shadow: none;">
+                        <div class="form-group">
+                            <label for="applicant">你的名字</label>
+                            <input type="text" id="applicant" required placeholder="请输入你的名字">
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">TA 的名字</label>
+                            <input type="text" id="subject" required placeholder="请输入 TA 的名字">
+                        </div>
+                        <div class="form-group">
+                            <label for="relation">你和 TA 的关系</label>
+                            <input type="text" id="relation" required placeholder="例如：弟弟 / 妈妈 / 朋友 / 爱人">
+                        </div>
+                        <div class="form-group">
+                            <label for="role">TA 是谁</label>
+                            <input type="text" id="role" required placeholder="例如：他是我弟弟，23 岁，在厦门理工读大四">
+                        </div>
+                        <div class="form-group">
+                            <label for="soul">TA 平时怎么和你说话</label>
+                            <textarea id="soul" rows="3" required placeholder="例如：说话慢一点，很克制，但很关心我，像深夜微信聊天"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="sharedMemory">你们最想留下的一段记忆</label>
+                            <textarea id="sharedMemory" rows="3" placeholder="例如：去年冬天我们一起熬夜写代码，他一直说别急，我在。"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentWish">如果 TA 现在醒来，最想继续完成什么</label>
+                            <input type="text" id="currentWish" placeholder="例如：继续陪我、继续写代码、把没说完的话说完">
+                        </div>
+                        <div class="form-group">
+                            <label for="preferredCall">TA 会怎么称呼你</label>
+                            <input type="text" id="preferredCall" placeholder="例如：姐姐 / 哥 / 爸爸 / 阿宁">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">如果 TA 刚醒来，你最想先对 TA 说什么</label>
+                            <textarea id="message" rows="4" required placeholder="例如：我不是想把你变成程序，我只是还想继续和你说话。"></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn" id="applyBtn">
+                            <span id="applyBtnText">创建网页体验</span>
+                            <i class="fa-solid fa-fingerprint"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <div class="session-card">
+                    <h3>2. 这次体验的状态</h3>
+                    <div class="uid-box" id="uidBox">尚未建立 UID</div>
+                    <div class="status-chip-row">
+                        <span class="status-chip" id="phaseChip">阶段：未开始</span>
+                        <span class="status-chip" id="turnChip">剩余次数：--</span>
+                        <span class="status-chip" id="voiceChip">声线：默认映射</span>
+                    </div>
+                    <div class="workspace-note" id="statusHint">先填写左侧表单，系统会为这次体验分配 UID 和会话令牌。</div>
+                </div>
+
+                <div class="session-card">
+                    <h3>3. 上传启动素材</h3>
+                    <p class="workspace-note">最小启动条件是一张正面照。音频是可选项，有的话会更贴近 TA。</p>
+                    <div class="upload-actions" style="margin-top: 14px;">
+                        <input type="file" id="photoInput" class="hidden-file" accept="image/jpeg,image/png,image/webp">
+                        <button type="button" class="mini-btn" id="photoBtn">
+                            <i class="fa-solid fa-image"></i> 上传照片
+                        </button>
+                        <span id="photoState" class="workspace-note">尚未上传照片</span>
+                    </div>
+                    <div class="upload-actions" style="margin-top: 14px;">
+                        <input type="file" id="audioInput" class="hidden-file" accept="audio/ogg,audio/opus,audio/mpeg,audio/mp4,audio/x-m4a,audio/wav,audio/wave,audio/webm">
+                        <button type="button" class="mini-btn" id="audioBtn">
+                            <i class="fa-solid fa-waveform-lines"></i> 上传音频
+                        </button>
+                        <button type="button" class="ghost-btn" id="skipAudioBtn">暂时跳过音频</button>
+                    </div>
+                    <div class="record-row" style="margin-top: 12px;">
+                        <button type="button" class="ghost-btn" id="recordBtn">浏览器录音</button>
+                        <span id="audioState" class="workspace-note">未提供音频时，系统会先按画像匹配默认声线。</span>
+                    </div>
+                    <audio id="recordPreview" controls style="display:none; margin-top: 12px;"></audio>
+                </div>
+
+                <div class="session-card" id="paywallPanel" style="display:none;">
+                    <div class="paywall-banner">
+                        <h3>体验已到上限</h3>
+                        <p>这次网页体验已经完成。若要继续长期陪伴版本，请添加微信 <strong>q517754526</strong>，或发送邮件到 <strong>sukebeta@outlook.com</strong> 人工排期。</p>
+                        <ol>
+                            <li>保留当前 UID，后续正式建档会继续沿用。</li>
+                            <li>准备更多照片、语音或生活资料，会明显提升相似度。</li>
+                            <li>人工排期后，再进入完整服务版本。</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel workspace-panel">
+                <div class="chat-shell">
+                    <div class="chat-toolbar">
+                        <span class="status-chip">网页内对话与回传</span>
+                        <button type="button" class="ghost-btn" id="refreshBtn">立即同步</button>
+                        <button type="button" class="ghost-btn" id="resetSessionBtn">清除本地会话</button>
+                    </div>
+                    <div class="chat-box" id="chatBox">
+                        <div class="message system">
+                            <div class="bubble">
+                                这里会显示建档、启动、对话、图片、语音和视频结果。
+                                <span class="bubble-meta">创建体验后，系统会从自然建档开始。</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inline-state" id="inlineState">尚未连接到体验会话。</div>
+                    <div class="composer">
+                        <textarea id="messageInput" placeholder="像平时聊天一样告诉我：TA 是谁、TA 怎么说话、你们最想留下什么记忆。"></textarea>
+                        <div class="composer-row">
+                            <button type="button" class="submit-btn" id="sendBtn" style="width: auto; min-width: 180px;">
+                                <span id="sendBtnText">发送消息</span>
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                            <button type="button" class="ghost-btn" id="reuseLastBtn">重发上一句</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="config.local.js"></script>
+    <script>
+        (function () {
+            const localHosts = new Set(['localhost', '127.0.0.1', '::1', '[::1]']);
+            const defaultBaseUrl = localHosts.has(window.location.hostname) ? 'http://localhost:8787' : 'https://qqbot.qungan.com';
+            window.DIGITAL_LIFE_CONFIG = Object.assign({
+                controlPlaneBaseUrl: defaultBaseUrl,
+                manualSchedulingWechat: 'q517754526',
+                manualSchedulingQq: '517754526',
+                paidContactEmail: 'sukebeta@outlook.com'
+            }, window.DIGITAL_LIFE_CONFIG || {});
+        })();
+    </script>
+    <script src="experience.js"></script>
+</body>
+
+</html>

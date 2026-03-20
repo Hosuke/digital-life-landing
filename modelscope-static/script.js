@@ -83,9 +83,6 @@ document.querySelectorAll('.fade-in').forEach((el) => observers.observe(el));
 
 const CONFIG = window.MODELSCOPE_STATIC_CONFIG || {};
 const CONTROL_PLANE_BASE_URL = String(CONFIG.controlPlaneBaseUrl || '').trim().replace(/\/+$/, '');
-const PREFERRED_CHANNEL = String(CONFIG.preferredChannel || 'qq').trim().toLowerCase();
-const QQ_BOT_NAME = String(CONFIG.qqBotName || '珀存QQBot').trim();
-const QQ_BOT_UIN = String(CONFIG.qqBotUin || '').trim();
 const PAID_CONTACT_EMAIL = String(CONFIG.paidContactEmail || 'sukebeta@outlook.com').trim();
 const MANUAL_CONTACT_WECHAT = String(CONFIG.manualSchedulingWechat || 'q517754526').trim();
 const MANUAL_CONTACT_QQ = String(CONFIG.manualSchedulingQq || '517754526').trim();
@@ -136,18 +133,14 @@ planRadios.forEach((radio) => {
 });
 togglePlanUi();
 
-function defaultActivation(uid, qqNumber = '') {
+function defaultActivation(uid) {
   return {
-    channel: PREFERRED_CHANNEL,
-    qq: {
-      botName: QQ_BOT_NAME,
-      botUin: QQ_BOT_UIN || null,
-      qqNumber: qqNumber || null
-    },
+    channel: 'web',
+    entryUrl: 'https://amberify.me/experience.html',
     steps: [
-      qqNumber ? `请使用 QQ 号 ${qqNumber} 私聊机器人 ${QQ_BOT_NAME}` : `请先在 QQ 搜索机器人 ${QQ_BOT_NAME}`,
-      '先自然告诉它：TA 是谁、TA 怎么说话、你们最想留下什么记忆',
-      '然后继续补 1 张照片和 10 秒语音，系统会生成专属数字生命 skill 包'
+      '打开网页工作台并继续建档',
+      '先自然描述：TA 是谁、TA 怎么说话、你们最想留下什么记忆',
+      '然后继续补 1 张照片和一段语音，系统会自动继续'
     ],
     manualFulfillment: {
       message: `如需人工协助，请添加微信 ${MANUAL_CONTACT_WECHAT}（QQ ${MANUAL_CONTACT_QQ}）。`
@@ -158,19 +151,16 @@ function defaultActivation(uid, qqNumber = '') {
 function renderActivationGuide(activation, uid) {
   const data = activation || defaultActivation(uid);
   const steps = Array.isArray(data.steps) ? data.steps : [];
-  const qqInfo = data.qq || {};
   const stepsHtml = steps.map((item) => `<li style="margin-bottom:6px;">${htmlSafe(item)}</li>`).join('');
-  const qqNumber = qqInfo.qqNumber ? `<div style="margin-top:8px; opacity:0.8;">绑定 QQ：${htmlSafe(qqInfo.qqNumber)}</div>` : '';
-  const qqBot = qqInfo.botUin ? `<div style="margin-top:6px; opacity:0.75;">机器人 ID：${htmlSafe(qqInfo.botUin)}</div>` : '';
+  const entryUrl = String(data.entryUrl || '').trim();
   const manual = data.manualFulfillment ? `<div class="mailto-box">${htmlSafe(data.manualFulfillment.message || '')}</div>` : '';
   activationGuideContainer.innerHTML = `
     <div style="padding:12px; border-radius:8px; border:1px solid var(--glass-border); background:rgba(0,0,0,0.25); text-align:left; font-size:0.92rem; margin-top: 16px;">
-      <div style="margin-bottom:10px;"><strong>QQ 建档引导</strong></div>
+      <div style="margin-bottom:10px;"><strong>网页体验引导</strong></div>
       <div style="margin-bottom:8px; opacity:0.9;">UID：${htmlSafe(uid)}</div>
-      ${qqNumber}
-      ${qqBot}
       <ol style="margin:12px 0 0 20px; padding:0;">${stepsHtml}</ol>
       ${manual}
+      ${entryUrl ? `<a class="cta-btn m-top" href="${htmlSafe(entryUrl)}" target="_blank" rel="noopener" style="justify-content:center; width:100%;">打开网页工作台</a>` : ''}
     </div>`;
 }
 
@@ -184,7 +174,7 @@ function openModal(uid, title, bodyHtml) {
 
 async function submitTrial(payload) {
   if (!CONTROL_PLANE_BASE_URL) {
-    return { uid: generateFallbackUid(), activation: defaultActivation(generateFallbackUid(), payload.qqNumber), fallback: true };
+    return { uid: generateFallbackUid(), activation: defaultActivation(generateFallbackUid()), fallback: true };
   }
   const res = await fetch(`${CONTROL_PLANE_BASE_URL}/api/apply`, {
     method: 'POST',
@@ -193,7 +183,7 @@ async function submitTrial(payload) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || !data.uid) throw new Error(data.error || 'apply_failed');
-  return { uid: data.uid, activation: data.activation || defaultActivation(data.uid, payload.qqNumber), fallback: false };
+  return { uid: data.uid, activation: data.activation || defaultActivation(data.uid), fallback: false };
 }
 
 function buildMailtoUrl(payload) {
@@ -210,7 +200,6 @@ function buildMailtoUrl(payload) {
     `共享记忆：${payload.sharedMemory || ''}`,
     `当前愿望：${payload.currentWish || ''}`,
     `TA 会怎么称呼我：${payload.preferredCall || ''}`,
-    `体验绑定 QQ：${payload.qqNumber || ''}`,
     '',
     '我想先对 TA 说：',
     payload.message || '',
@@ -231,7 +220,6 @@ applyForm.addEventListener('submit', async (event) => {
     applicant: document.getElementById('applicant').value.trim(),
     subject: document.getElementById('subject').value.trim(),
     relation: document.getElementById('relation').value.trim(),
-    qqNumber: document.getElementById('qqNumber').value.trim(),
     role: document.getElementById('role').value.trim(),
     soul: document.getElementById('soul').value.trim(),
     sharedMemory: document.getElementById('sharedMemory').value.trim(),
@@ -239,7 +227,6 @@ applyForm.addEventListener('submit', async (event) => {
     preferredCall: document.getElementById('preferredCall').value.trim(),
     contactEmail: (document.getElementById('contactEmail') || {}).value ? document.getElementById('contactEmail').value.trim() : '',
     message: document.getElementById('message').value.trim(),
-    channelPreference: PREFERRED_CHANNEL,
     source: 'modelscope-static'
   };
 
@@ -262,7 +249,7 @@ applyForm.addEventListener('submit', async (event) => {
       const result = await submitTrial(payload);
       renderActivationGuide(result.activation, result.uid);
       openModal(result.uid, '体验档案已建立', `
-        <p>体验版已经提交。接下来请去 QQ 继续建档，补 1 张清晰正面照片和 10 秒语音。</p>
+        <p>体验版已经提交。接下来请进入网页工作台继续建档，补 1 张清晰正面照片和一段语音。</p>
         ${result.fallback ? '<p class="form-note">当前后端不可用，页面使用了演示 UID。</p>' : ''}
       `);
     }
