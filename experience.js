@@ -135,6 +135,8 @@ const state = {
   webDemo: null,
   lastUserMessage: '',
   seenTaskIds: new Set(),
+  optimisticMessages: [],
+  localMessageSeq: 0,
   pollTimer: null,
   mediaRecorder: null,
   mediaChunks: []
@@ -279,7 +281,17 @@ function fileToDataUrl(file) {
 }
 
 function buildMediaHtml(task) {
-  if (!task || !task.asset || !task.asset.url) return '';
+  if (!task) return '';
+  if (!task.asset || !task.asset.url) {
+    return `
+      <div class="media-card placeholder">
+        <div class="media-placeholder">
+          <i class="fa-solid fa-sparkles"></i>
+          <span>${htmlSafe(task.placeholderText || '内容生成中...')}</span>
+        </div>
+      </div>
+    `;
+  }
   const url = withToken(task.asset.url);
   const kind = String(task.asset.kind || '').trim();
   if (kind === 'photo') {
@@ -292,6 +304,66 @@ function buildMediaHtml(task) {
     return `<div class="media-card"><audio src="${htmlSafe(url)}" controls></audio><div class="media-label">音频回传</div></div>`;
   }
   return '';
+}
+
+function formatMetaTime(value) {
+  const ts = Date.parse(String(value || ''));
+  if (!Number.isFinite(ts)) return '';
+  return new Date(ts).toLocaleString('zh-CN', {
+    hour12: false,
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function mediaIntentLabel(intent = '') {
+  const key = String(intent || '').trim().toLowerCase();
+  if (key === 'photo') return '图片';
+  if (key === 'video') return '视频';
+  if (key === 'voice') return '语音';
+  if (key === 'ambient') return '环境音';
+  return '内容';
+}
+
+function buildTaskTimelineItem(task) {
+  const label = mediaIntentLabel(task.intent);
+  const status = String(task.status || '').trim().toLowerCase();
+  const metaTime = formatMetaTime(task.updatedAt || task.createdAt);
+  if (status === 'failed') {
+    return `
+      <div class="message system">
+        <div class="bubble">
+          这次${htmlSafe(label)}生成没有成功，你可以再试一次。
+          <span class="bubble-meta">${htmlSafe([label, metaTime].filter(Boolean).join(' · '))}</span>
+        </div>
+      </div>
+    `;
+  }
+  if (status === 'done') {
+    return `
+      <div class="message system">
+        <div class="bubble">
+          已收到${htmlSafe(label)}。
+          <span class="bubble-meta">${htmlSafe([label, metaTime].filter(Boolean).join(' · '))}</span>
+          ${buildMediaHtml(task)}
+        </div>
+      </div>
+    `;
+  }
+  const waitingText = status === 'progress'
+    ? `正在生成${label}，稍后会直接回到这里。`
+    : `${label}任务已排队，马上开始生成。`;
+  return `
+    <div class="message system">
+      <div class="bubble">
+        ${htmlSafe(waitingText)}
+        <span class="bubble-meta">${htmlSafe([label, metaTime || '生成中'].filter(Boolean).join(' · '))}</span>
+        ${buildMediaHtml({ placeholderText: `${label}生成中...` })}
+      </div>
+    </div>
+  `;
 }
 
 function renderChat(webDemo = null) {
@@ -310,33 +382,58 @@ function renderChat(webDemo = null) {
 
   const messages = Array.isArray(webDemo.recentMessages) ? webDemo.recentMessages : [];
   const tasks = Array.isArray(webDemo.pendingMediaTasks) ? webDemo.pendingMediaTasks : [];
-  const doneTasks = tasks.filter((task) => String(task.status || '') === 'done' && task.asset && task.asset.url);
+  const optimisticMessages = Array.isArray(state.optimisticMessages) ? state.optimisticMessages : [];
+  const timeline = [];
+
+  messages.forEach((message, index) => {
+    timeline.push({
+      kind: 'message',
+      sortAt: Date.parse(String(message.at || '')) || 0,
+      index,
+      payload: message
+    });
+  });
+  optimisticMessages.forEach((message, index) => {
+    timeline.push({
+      kind: 'message',
+      sortAt: Date.parse(String(message.at || '')) || (Date.now() + index),
+      index: messages.length + index,
+      payload: message
+    });
+  });
+  tasks.forEach((task, index) => {
+    timeline.push({
+      kind: 'task',
+      sortAt: Date.parse(String(task.createdAt || task.updatedAt || '')) || (Date.now() + 1000 + index),
+      index: messages.length + optimisticMessages.length + index,
+      payload: task
+    });
+  });
+
+  timeline.sort((a, b) => {
+    if (a.sortAt !== b.sortAt) return a.sortAt - b.sortAt;
+    return a.index - b.index;
+  });
 
   let html = '';
-  messages.forEach((message) => {
+  timeline.forEach((item) => {
+    if (item.kind === 'task') {
+      html += buildTaskTimelineItem(item.payload);
+      return;
+    }
+    const message = item.payload || {};
     const role = String(message.role || 'assistant').trim();
     const cls = role === 'user' ? 'user' : 'assistant';
     const metaParts = [];
     if (message.intent) metaParts.push(message.intent);
     if (message.location) metaParts.push(message.location);
-    if (message.at) metaParts.push(new Date(message.at).toLocaleString('zh-CN'));
+    if (message.pending) metaParts.push('发送中');
+    if (message.at) metaParts.push(formatMetaTime(message.at));
     html += `
-      <div class="message ${cls}">
+      <div class="message ${cls}${message.pending ? ' pending' : ''}">
         <div class="bubble">
           ${htmlSafe(message.text || '')}
           ${metaParts.length ? `<span class="bubble-meta">${htmlSafe(metaParts.join(' · '))}</span>` : ''}
-        </div>
-      </div>
-    `;
-  });
-
-  doneTasks.forEach((task) => {
-    html += `
-      <div class="message system">
-        <div class="bubble">
-          多模态结果已回传：${htmlSafe(task.intent || 'media')}
-          <span class="bubble-meta">${htmlSafe(String(task.updatedAt || ''))}</span>
-          ${buildMediaHtml(task)}
         </div>
       </div>
     `;
@@ -438,6 +535,14 @@ async function handleSendMessage(textOverride = '') {
     return;
   }
   state.lastUserMessage = text;
+  state.optimisticMessages.push({
+    id: `local-${Date.now()}-${state.localMessageSeq += 1}`,
+    role: 'user',
+    text,
+    at: new Date().toISOString(),
+    pending: true
+  });
+  renderChat(state.webDemo);
   setBusy(sendBtn, sendBtnText, '发送中...', true);
   setInlineState('消息已送出，正在等待回复...');
   try {
@@ -454,6 +559,7 @@ async function handleSendMessage(textOverride = '') {
         : `消息未成功处理：${data.error || 'unknown_error'}`);
       return;
     }
+    state.optimisticMessages = [];
     if (data.webDemo) {
       renderWebDemo(data.webDemo);
     } else {
@@ -466,6 +572,8 @@ async function handleSendMessage(textOverride = '') {
       setInlineState('消息已处理。');
     }
   } catch (error) {
+    state.optimisticMessages = [];
+    renderChat(state.webDemo);
     setInlineState(`发送失败：${error.message}`);
     if (error.message === 'trial_limit_reached') {
       await refreshSession();
@@ -505,7 +613,8 @@ async function handlePhotoSelect(event) {
   setInlineState('正在上传照片...');
   try {
     await uploadAsset('photo', file);
-    setInlineState('照片已上传。若文本信息已完整，系统会自动启动。');
+    photoState.textContent = '参考图已接收，后续会尽量保持人物一致。';
+    setInlineState('参考图已接收。若文本信息已完整，系统会自动启动。');
   } catch (error) {
     photoState.textContent = `照片上传失败：${error.message}`;
     setInlineState(`照片上传失败：${error.message}`);
@@ -521,6 +630,7 @@ async function handleAudioSelect(event) {
   setInlineState('正在上传音频...');
   try {
     await uploadAsset('audio', file);
+    audioState.textContent = '音频已接收，后续语音会优先贴近这段音色。';
     setInlineState('音频已上传。之后生成的语音会优先使用这段素材的音色。');
   } catch (error) {
     audioState.textContent = `音频上传失败：${error.message}`;
@@ -581,7 +691,7 @@ function wireEvents() {
   applyForm.addEventListener('submit', handleApply);
   sendBtn.addEventListener('click', () => handleSendMessage());
   messageInput.addEventListener('keydown', (event) => {
-    if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       handleSendMessage();
     }
