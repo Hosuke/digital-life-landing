@@ -13,7 +13,7 @@ export function isLocalHost(): boolean {
 
 export function readConfig(): AppConfig {
   const globalConfig = window.DIGITAL_LIFE_CONFIG || {};
-  const fallbackBaseUrl = isLocalHost() ? 'http://localhost:8787' : 'https://api.amberify.me';
+  const fallbackBaseUrl = isLocalHost() ? 'http://localhost:8787' : 'https://qqbot.qungan.com';
   return {
     controlPlaneBaseUrl: String(globalConfig.controlPlaneBaseUrl || import.meta.env.VITE_CONTROL_PLANE_BASE_URL || fallbackBaseUrl).trim().replace(/\/+$/, ''),
     manualSchedulingWechat: String(globalConfig.manualSchedulingWechat || import.meta.env.VITE_MANUAL_SCHEDULING_WECHAT || 'q517754526').trim(),
